@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAXI - Píritu ↔ Turén</title>
+  <style>
+    :root {
+      --bg: #f3f5f8;
+      --card: #ffffff;
+      --primary: #111827;
+      --accent: #f59e0b;
+      --green: #16a34a;
+      --yellow: #ca8a04;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Arial, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--primary); padding-bottom: 40px; }
+
+    header {
+      background: var(--primary); color: #fff; padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: 0.5px; }
+    .brand span.badge { background: var(--accent); color: #111; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+    .top-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      background: rgba(255,255,255,0.12); color: #fff; border: none;
+      padding: 7px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .icon-btn.active { background: var(--accent); color: #111; }
+
+    .container { max-width: 540px; margin: 14px auto; padding: 0 14px; }
+
+    .tarifa-bar {
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .tarifa-precio { font-size: 17px; font-weight: 800; color: #92400e; }
+    .tarifa-sub { font-size: 12px; color: #78350f; }
+
+    .central-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 14px;
+    }
+    .central-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #374151; }
+    .btn-row { display: flex; gap: 8px; }
+
+    .btn {
+      width: 100%; border: none; border-radius: 10px; padding: 11px 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-dark { background: var(--primary); color: #fff; }
+    .btn-amber { background: var(--accent); color: #111; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
+    .btn-sm { padding: 7px 10px; font-size: 12px; width: auto; }
+
+    /* Lista compacta de conductores */
+    .driver-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: transform 0.08s ease, box-shadow 0.12s ease;
+    }
+    .driver-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .driver-card:active { transform: scale(0.99); }
+    .avatar {
+      width: 58px; height: 58px; border-radius: 50%; object-fit: cover;
+      background: #e5e7eb; border: 2px solid var(--border); flex-shrink: 0;
+    }
+    .driver-main { flex: 1; min-width: 0; }
+    .driver-name { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .driver-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .pill {
+      padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap;
+    }
+    .pill-disp { background: #dcfce7; color: #166534; }
+    .pill-ocup { background: #fef9c3; color: #854d0e; }
+
+    /* Modal / Ficha completa del conductor */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 40;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; max-width: 440px; width: 100%;
+      max-height: 90vh; overflow-y: auto; padding: 18px; position: relative;
+    }
+    .modal-foto { width: 100%; height: 220px; object-fit: cover; border-radius: 12px; background: #e5e7eb; }
+    .dato-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; font-size: 13px; }
+    .dato-box { background: #f9fafb; border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px; }
+    .dato-label { font-size: 11px; color: var(--muted); display: block; }
+    .pm-box {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+      padding: 12px; margin: 12px 0; font-size: 13px;
+    }
+
+    /* Secciones de Modo Conductor y Programador */
+    .panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 14px;
+    }
+    label { display: block; font-size: 12px; font-weight: 700; margin-top: 10px; color: #374151; }
+    input, select {
+      width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 9px;
+      margin-top: 4px; font-size: 14px; background: #fff;
+    }
+    .estado-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+    .estado-btn {
+      padding: 10px 6px; border-radius: 10px; border: 2px solid var(--border);
+      background: #fff; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .estado-btn.sel-disp { border-color: var(--green); background: #dcfce7; color: #166534; }
+    .estado-btn.sel-ocup { border-color: var(--yellow); background: #fef9c3; color: #854d0e; }
+    .estado-btn.sel-off { border-color: var(--red); background: #fee2e2; color: #991b1b; }
+
+    .msg { margin-top: 10px; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 600; display: none; }
+    .msg.ok { display: block; background: #dcfce7; color: #166534; }
+    .msg.err { display: block; background: #fee2e2; color: #991b1b; }
+
+    .admin-item {
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+      margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 13px;
+    }
+    .hidden { display: none !important; }
+    .empty { text-align: center; padding: 28px 14px; color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>TAXI</span>
+    <span class="badge">Píritu ↔ Turén</span>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn active" id="nav-clientes" onclick="irVista('clientes')">Clientes</button>
+    <button class="icon-btn" id="nav-conductor" onclick="irVista('conductor')">Conductor</button>
+    <button class="icon-btn" id="nav-admin" onclick="abrirModalAdmin()">🔒 Admin</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- VISTA CLIENTES -->
+  <section id="vista-clientes">
+    <div class="tarifa-bar">
+      <div>
+        <div class="tarifa-sub" id="lbl-nota-tarifa">Tarifa general de la ruta</div>
+        <div class="tarifa-precio" id="lbl-precio-carrera">Cargando...</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="cargarEstadoPublico()">↻ Actualizar</button>
+    </div>
+
+    <div class="central-box" id="box-central">
+      <div class="central-title">📞 Central / Administrador (si no hay disponibilidad o no responde)</div>
+      <div class="btn-row">
+        <a id="btn-llamar-admin" href="#" class="btn btn-blue">Llamar Central</a>
+        <a id="btn-wa-admin" href="#" target="_blank" class="btn btn-green">WhatsApp Central</a>
+      </div>
+    </div>
+
+    <div id="lista-conductores">
+      <div class="empty">Cargando conductores disponibles...</div>
+    </div>
+  </section>
+
+  <!-- VISTA CONDUCTOR -->
+  <section id="vista-conductor" class="hidden">
+    <div id="conductor-login" class="panel">
+      <h3 style="margin:0 0 6px 0;">Ingreso Modo Conductor</h3>
+      <div style="font-size:12px; color:var(--muted);">Quedará guardado en este teléfono para entrar directo.</div>
+      <label>Código de Conductor</label>
+      <input type="text" id="login-codigo" placeholder="Ej: COND-01">
+      <label>Clave</label>
+      <input type="password" id="login-clave" placeholder="Tu clave">
+      <button class="btn btn-dark" style="margin-top:14px;" onclick="iniciarSesionConductor()">Entrar</button>
+      <div id="msg-login" class="msg"></div>
+    </div>
+
+    <div id="conductor-panel" class="panel hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <div>
+          <div style="font-size:12px; color:var(--muted);">Conductor conectado</div>
+          <div id="cond-nombre-sesion" style="font-size:18px; font-weight:800;"></div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="cerrarSesionConductor()">Salir</button>
+      </div>
+
+      <label>1. Estado actual</label>
+      <div class="estado-group">
+        <button type="button" class="estado-btn" id="st-Disponible" onclick="seleccionarEstado('Disponible')">🟢 Disponible</button>
+        <button type="button" class="estado-btn" id="st-Ocupado" onclick="seleccionarEstado('Ocupado')">🟡 Ocupado</button>
+        <button type="button" class="estado-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 No trabajo</button>
+      </div>
+
+      <label>2. Dirección de ruta</label>
+      <select id="cond-ruta">
+        <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
+        <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
+      </select>
+
+      <label>3. Ubicación actual (escribe dónde estás; reemplaza la anterior)</label>
+      <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma, Redoma, Plaza...">
+
+      <button class="btn btn-green" style="margin-top:14px;" onclick="guardarEstadoConductor()">Guardar mi Estado y Ubicación</button>
+      <div id="msg-cond" class="msg"></div>
+    </div>
+  </section>
+
+  <!-- VISTA PROGRAMADOR / ADMIN -->
+  <section id="vista-admin" class="hidden">
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">Configuración General</h3>
+        <button class="btn btn-outline btn-sm" onclick="salirAdmin()">Cerrar Admin</button>
+      </div>
+
+      <label>Teléfono del Administrador / Central (con código país o local, ej: 04140000000)</label>
+      <input type="tel" id="cfg-tel-admin" placeholder="Ej: 04141234567">
+
+      <label>Precio General de la Carrera</label>
+      <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
+
+      <label>Referencia / Nota de Tarifa</label>
+      <input type="text" id="cfg-nota" placeholder="Ej: Tarifa base Píritu ↔ Turén">
+
+      <button class="btn btn-dark" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Configuración</button>
+      <div id="msg-cfg" class="msg"></div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 4px 0;" id="titulo-form-cond">Agregar Conductor</h3>
+      <div style="font-size:12px; color:var(--muted);">Si escribes un Código existente, editará ese conductor.</div>
+
+      <label>Código único (para entrar a la app)</label>
+      <input type="text" id="adm-codigo" placeholder="Ej: MOTO01" required>
+
+      <label>Clave del Conductor</label>
+      <input type="text" id="adm-clave" placeholder="Ej: 1234" required>
+
+      <label>Nombre y Apellido</label>
+      <input type="text" id="adm-nombre" required>
+
+      <label>Teléfono (Llamadas / WhatsApp)</label>
+      <input type="tel" id="adm-telefono" required>
+
+      <label>Cédula</label>
+      <input type="text" id="adm-cedula" required>
+
+      <label>Banco Pago Móvil</label>
+      <input type="text" id="adm-banco" placeholder="Ej: Banco de Venezuela">
+
+      <label>Teléfono Pago Móvil</label>
+      <input type="tel" id="adm-tel-pm">
+
+      <label>Cédula Pago Móvil</label>
+      <input type="text" id="adm-ced-pm">
+
+      <label>Tipo de Moto</label>
+      <input type="text" id="adm-moto" placeholder="Ej: Bera SBR 150">
+
+      <label>Placa de la Moto</label>
+      <input type="text" id="adm-placa" placeholder="Ej: AB123CD">
+
+      <label>Color de la Moto</label>
+      <input type="text" id="adm-color" placeholder="Ej: Negra">
+
+      <label>Link de Foto (imgbb)</label>
+      <input type="url" id="adm-foto" placeholder="https://i.ibb.co/...">
+
+      <label>Habilitado en sistema</label>
+      <select id="adm-activo">
+        <option value="SI">SI (Habilitado)</option>
+        <option value="NO">NO (Suspendido)</option>
+      </select>
+
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn btn-green" onclick="guardarConductorAdmin()">Guardar Conductor</button>
+        <button class="btn btn-outline" onclick="limpiarFormConductor()">Limpiar</button>
+      </div>
+      <div id="msg-adm-cond" class="msg"></div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin:0 0 8px 0;">Conductores Registrados</h3>
+      <div id="lista-admin-conductores"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL FICHA DEL CONDUCTOR -->
+<div class="modal-backdrop" id="modal-conductor" onclick="cerrarModalSiFondo(event)">
+  <div class="modal" id="modal-contenido"></div>
+</div>
+
+<!-- MODAL CLAVE PROGRAMADOR -->
+<div class="modal-backdrop" id="modal-clave-admin" onclick="cerrarClaveSiFondo(event)">
+  <div class="modal">
+    <h3 style="margin:0 0 6px 0;">Modo Programador</h3>
+    <div style="font-size:13px; color:var(--muted);">Ingresa la clave de acceso para administrar la app.</div>
+    <label>Clave</label>
+    <input type="password" id="input-clave-admin" placeholder="••••••">
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn btn-dark" onclick="validarClaveAdmin()">Ingresar</button>
+      <button class="btn btn-outline" onclick="cerrarModalClave()">Cancelar</button>
+    </div>
+    <div id="msg-clave-admin" class="msg"></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzDUzyCzaap15ns5O75RGq0bOWCN_QxQU1CHU5LV8VDkzrrZTbU-zB0PRAqG4ejV91a/exec";
+  const STORAGE_COND = "taxi_piritu_turen_conductor";
+  const STORAGE_ADMIN = "taxi_piritu_turen_admin_key";
+
+  let estadoApp = {
+    config: { telefonoAdmin: "", precioCarrera: "Consultar tarifa", notaTarifa: "Ruta Píritu ↔ Turén" },
+    conductores: []
+  };
+  let conductorActual = null;
+  let estadoSeleccionadoCond = "Disponible";
+  let listaAdminCache = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarEstadoPublico();
+    cargarSesionGuardadaConductor();
+  });
+
+  function irVista(vista) {
+    ["clientes", "conductor", "admin"].forEach(v => {
+      document.getElementById("vista-" + v).classList.toggle("hidden", v !== vista);
+      const nav = document.getElementById("nav-" + v);
+      if (nav) nav.classList.toggle("active", v === vista);
+    });
+    if (vista === "clientes") cargarEstadoPublico();
+  }
+
+  function mostrarMsg(id, texto, esError = false) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.className = "msg " + (esError ? "err" : "ok");
+  }
+
+  function limpiarTelefono(tel) {
+    return String(tel || "").replace(/[^\d]/g, "");
+  }
+
+  function formatoInternacionalVE(tel) {
+    const limpio = limpiarTelefono(tel);
+    if (!limpio) return "";
+    if (limpio.startsWith("58")) return limpio;
+    if (limpio.startsWith("0")) return "58" + limpio.slice(1);
+    return "58" + limpio;
+  }
+
+  async function cargarEstadoPublico() {
+    try {
+      const res = await fetch(`${API_URL}?action=estadoPublico`);
+      const data = await res.json();
+      if (data.status === "ok") {
+        estadoApp.config = data.config || estadoApp.config;
+        estadoApp.conductores = data.conductores || [];
+        renderizarClientes();
+      }
+    } catch (e) {
+      document.getElementById("lista-conductores").innerHTML =
+        `<div class="empty">Error al cargar datos. Revisa la conexión o la URL del script.</div>`;
+    }
+  }
+
+  function renderizarClientes() {
+    const cfg = estadoApp.config;
+    document.getElementById("lbl-precio-carrera").textContent = cfg.precioCarrera || "Consultar tarifa";
+    document.getElementById("lbl-nota-tarifa").textContent = cfg.notaTarifa || "Ruta Píritu ↔ Turén";
+
+    const telAdminLimpio = limpiarTelefono(cfg.telefonoAdmin);
+    const waAdmin = formatoInternacionalVE(cfg.telefonoAdmin);
+    const boxCentral = document.getElementById("box-central");
+
+    if (telAdminLimpio) {
+      boxCentral.classList.remove("hidden");
+      document.getElementById("btn-llamar-admin").href = `tel:${telAdminLimpio}`;
+      document.getElementById("btn-wa-admin").href = `https://wa.me/${waAdmin}?text=${encodeURIComponent("Hola, necesito ayuda para ubicar un moto taxi en la ruta Píritu ↔ Turén.")}`;
+    } else {
+      boxCentral.classList.add("hidden");
+    }
+
+    const cont = document.getElementById("lista-conductores");
+    if (!estadoApp.conductores.length) {
+      cont.innerHTML = `<div class="empty">No hay conductores disponibles u ocupados en este momento.<br>Usa el botón de Central si necesitas apoyo.</div>`;
+      return;
+    }
+
+    cont.innerHTML = estadoApp.conductores.map((c, idx) => {
+      const pillClass = c.estado === "Disponible" ? "pill-disp" : "pill-ocup";
+      const foto = c.linkFoto || "https://via.placeholder.com/100?text=TAXI";
+      return `
+        <div class="driver-card" onclick="abrirFichaConductor(${idx})">
+          <img class="avatar" src="${foto}" alt="${c.nombre}" onerror="this.src='https://via.placeholder.com/100?text=TAXI'">
+          <div class="driver-main">
+            <div class="driver-name">${c.nombre}</div>
+            <div class="driver-meta">${c.ruta} • ${c.ubicacion || "En ruta"}</div>
+          </div>
+          <span class="pill ${pillClass}">${c.estado}</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function abrirFichaConductor(idx) {
+    const c = estadoApp.conductores[idx];
+    if (!c) return;
+    const foto = c.linkFoto || "https://via.placeholder.com/300x200?text=TAXI";
+    const telLimpio = limpiarTelefono(c.telefono);
+    const precio = estadoApp.config.precioCarrera || "Consultar tarifa";
+
+    document.getElementById("modal-contenido").innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="pill ${c.estado === "Disponible" ? "pill-disp" : "pill-ocup"}">${c.estado}</span>
+        <button class="btn btn-outline btn-sm" onclick="cerrarModalConductor()">✕ Cerrar</button>
+      </div>
+      <img class="modal-foto" src="${foto}" alt="${c.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=TAXI'">
+      <h2 style="margin:12px 0 2px 0;">${c.nombre}</h2>
+      <div style="font-size:13px; color:var(--muted);">
+        Ruta: <strong>${c.ruta}</strong> • Ubicación: <strong>${c.ubicacion || "No especificada"}</strong>
+      </div>
+
+      <div class="dato-grid">
+        <div class="dato-box"><span class="dato-label">Teléfono</span><strong>${c.telefono || "-"}</strong></div>
+        <div class="dato-box"><span class="dato-label">Precio Carrera</span><strong>${precio}</strong></div>
+        <div class="dato-box"><span class="dato-label">Tipo de Moto</span><strong>${c.tipoMoto || "-"}</strong></div>
+        <div class="dato-box"><span class="dato-label">Color / Placa</span><strong>${c.color || "-"} / ${c.placa || "-"}</strong></div>
+      </div>
+
+      <div class="pm-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <strong>💳 Datos de Pago Móvil</strong>
+          <button class="btn btn-outline btn-sm" onclick="copiarPagoMovil('${c.bancoPagoMovil}','${c.telefonoPagoMovil}','${c.cedulaPagoMovil}')">Copiar</button>
+        </div>
+        <div>Banco: <strong>${c.bancoPagoMovil || "-"}</strong></div>
+        <div>Teléfono: <strong>${c.telefonoPagoMovil || "-"}</strong></div>
+        <div>Cédula: <strong>${c.cedulaPagoMovil || "-"}</strong></div>
+      </div>
+
+      <div style="background:#f9fafb; border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:12px;">
+        <div style="font-size:12px; font-weight:700; margin-bottom:6px;">Para solicitar por WhatsApp (se registra tu IP por seguridad):</div>
+        <input type="text" id="cli-nombre" placeholder="Tu nombre">
+        <input type="tel" id="cli-telefono" placeholder="Tu teléfono">
+        <input type="text" id="cli-origen" placeholder="¿Dónde estás? (Ej: Mata de Palma / Centro)">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="solicitarPorWhatsApp(${idx})">💬 WhatsApp</button>
+        <a href="tel:${telLimpio}" class="btn btn-blue">📞 Llamar</a>
+      </div>
+      <div id="msg-ficha" class="msg"></div>
+    `;
+    document.getElementById("modal-conductor").classList.add("open");
+  }
+
+  function cerrarModalConductor() {
+    document.getElementById("modal-conductor").classList.remove("open");
+  }
+  function cerrarModalSiFondo(e) {
+    if (e.target.id === "modal-conductor") cerrarModalConductor();
+  }
+
+  function copiarPagoMovil(banco, tel, ced) {
+    const texto = `Pago Móvil:\nBanco: ${banco}\nTeléfono: ${tel}\nCédula: ${ced}`;
+    navigator.clipboard.writeText(texto).then(() => {
+      mostrarMsg("msg-ficha", "Datos de Pago Móvil copiados.");
+    }).catch(() => {
+      mostrarMsg("msg-ficha", texto);
+    });
+  }
+
+  async function obtenerIPCliente() {
+    try {
+      const r = await fetch("https://api.ipify.org?format=json");
+      const j = await r.json();
+      return j.ip || "IP_NO_DETECTADA";
+    } catch (e) {
+      return "IP_NO_DETECTADA";
+    }
+  }
+
+  async function solicitarPorWhatsApp(idx) {
+    const c = estadoApp.conductores[idx];
+    const nombreCli = document.getElementById("cli-nombre").value.trim();
+    const telCli = document.getElementById("cli-telefono").value.trim();
+    const origenCli = document.getElementById("cli-origen").value.trim();
+
+    if (!nombreCli || !telCli) {
+      mostrarMsg("msg-ficha", "Escribe tu nombre y teléfono antes de pedir por WhatsApp.", true);
+      return;
+    }
+
+    mostrarMsg("msg-ficha", "Registrando solicitud y verificando historial...");
+    const ip = await obtenerIPCliente();
+
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          tipoRegistro: "registrarServicioCliente",
+          ip: ip,
+          nombreCliente: nombreCli,
+          telefonoCliente: telCli,
+          origenCliente: origenCli || c.ruta,
+          nombreConductor: c.nombre,
+          codigoConductor: c.codigo,
+          dispositivo: navigator.userAgent
+        })
+      });
+    } catch (e) {}
+
+    const waDest = formatoInternacionalVE(c.telefono);
+    const precio = estadoApp.config.precioCarrera || "Consultar tarifa";
+    const texto = `Hola ${c.nombre}, soy ${nombreCli} (Tel: ${telCli}). Solicito servicio de moto taxi (${c.ruta}). Mi ubicación/origen: ${origenCli || "Por indicar"}. Tarifa referencial: ${precio}.`;
+    window.open(`https://wa.me/${waDest}?text=${encodeURIComponent(texto)}`, "_blank");
+  }
+
+  /* --- MODO CONDUCTOR (localStorage) --- */
+  function cargarSesionGuardadaConductor() {
+    const raw = localStorage.getItem(STORAGE_COND);
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      if (saved && saved.codigo && saved.clave) {
+        conductorActual = saved;
+        mostrarPanelConductor(saved);
+      }
+    } catch (e) {}
+  }
+
+  async function iniciarSesionConductor() {
+    const codigo = document.getElementById("login-codigo").value.trim();
+    const clave = document.getElementById("login-clave").value.trim();
+    if (!codigo || !clave) {
+      mostrarMsg("msg-login", "Ingresa tu código y clave.", true);
+      return;
+    }
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ tipoRegistro: "loginConductor", codigo, clave })
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        const sesion = { ...data.conductor, clave };
+        localStorage.setItem(STORAGE_COND, JSON.stringify(sesion));
+        conductorActual = sesion;
+        mostrarPanelConductor(sesion);
+      } else {
+        mostrarMsg("msg-login", data.message || "Error al iniciar sesión", true);
+      }
+    } catch (e) {
+      mostrarMsg("msg-login", "Error de conexión", true);
+    }
+  }
+
+  function mostrarPanelConductor(c) {
+    document.getElementById("conductor-login").classList.add("hidden");
+    document.getElementById("conductor-panel").classList.remove("hidden");
+    document.getElementById("cond-nombre-sesion").textContent = `${c.nombre} (${c.codigo})`;
+    document.getElementById("cond-ruta").value = c.ruta || "Píritu ➔ Turén";
+    document.getElementById("cond-ubicacion").value = c.ubicacion || "";
+    seleccionarEstado(c.estado || "Disponible");
+  }
+
+  function cerrarSesionConductor() {
+    localStorage.removeItem(STORAGE_COND);
+    conductorActual = null;
+    document.getElementById("conductor-panel").classList.add("hidden");
+    document.getElementById("conductor-login").classList.remove("hidden");
+  }
+
+  function seleccionarEstado(est) {
+    estadoSeleccionadoCond = est;
+    ["Disponible", "Ocupado", "Fuera de servicio"].forEach(nombre => {
+      const btn = document.getElementById("st-" + nombre);
+      btn.className = "estado-btn";
+      if (nombre === est) {
+        if (est === "Disponible") btn.classList.add("sel-disp");
+        if (est === "Ocupado") btn.classList.add("sel-ocup");
+        if (est === "Fuera de servicio") btn.classList.add("sel-off");
+      }
+    });
+  }
+
+  async function guardarEstadoConductor() {
+    if (!conductorActual) return;
+    const ruta = document.getElementById("cond-ruta").value;
+    const ubicacion = document.getElementById("cond-ubicacion").value.trim();
+
+    mostrarMsg("msg-cond", "Guardando...");
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          tipoRegistro: "actualizarEstadoConductor",
+          codigo: conductorActual.codigo,
+          clave: conductorActual.clave,
+          estado: estadoSeleccionadoCond,
+          ruta: ruta,
+          ubicacion: ubicacion
+        })
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        conductorActual.estado = data.estado;
+        conductorActual.ruta = data.ruta;
+        conductorActual.ubicacion = data.ubicacion;
+        localStorage.setItem(STORAGE_COND, JSON.stringify(conductorActual));
+        mostrarMsg("msg-cond", "Actualizado en tiempo real.");
+      } else {
+        mostrarMsg("msg-cond", data.message || "Error al guardar", true);
+      }
+    } catch (e) {
+      mostrarMsg("msg-cond", "Error de conexión", true);
+    }
+  }
+
+  /* --- MODO PROGRAMADOR / ADMIN (584627) --- */
+  function abrirModalAdmin() {
+    const savedKey = sessionStorage.getItem(STORAGE_ADMIN);
+    if (savedKey) {
+      cargarPanelAdmin(savedKey);
+      return;
+    }
+    document.getElementById("input-clave-admin").value = "";
+    document.getElementById("msg-clave-admin").style.display = "none";
+    document.getElementById("modal-clave-admin").classList.add("open");
+  }
+
+  function cerrarModalClave() {
+    document.getElementById("modal-clave-admin").classList.remove("open");
+  }
+  function cerrarClaveSiFondo(e) {
+    if (e.target.id === "modal-clave-admin") cerrarModalClave();
+  }
+
+  async function validarClaveAdmin() {
+    const clave = document.getElementById("input-clave-admin").value.trim();
+    if (!clave) {
+      mostrarMsg("msg-clave-admin", "Escribe la clave.", true);
+      return;
+    }
+    await cargarPanelAdmin(clave, true);
+  }
+
+  async function cargarPanelAdmin(clave, desdeModal = false) {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ tipoRegistro: "adminObtenerTodo", claveProgramador: clave })
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        sessionStorage.setItem(STORAGE_ADMIN, clave);
+        cerrarModalClave();
+
+        document.getElementById("cfg-tel-admin").value = data.config.telefonoAdmin || "";
+        document.getElementById("cfg-precio").value = data.config.precioCarrera || "";
+        document.getElementById("cfg-nota").value = data.config.notaTarifa || "";
+
+        listaAdminCache = data.conductores || [];
+        renderizarAdminConductores();
+        irVista("admin");
+      } else {
+        if (desdeModal) mostrarMsg("msg-clave-admin", data.message || "Clave incorrecta", true);
+        else {
+          sessionStorage.removeItem(STORAGE_ADMIN);
+          abrirModalAdmin();
+        }
+      }
+    } catch (e) {
+      if (desdeModal) mostrarMsg("msg-clave-admin", "Error de conexión", true);
+    }
+  }
+
+  function salirAdmin() {
+    sessionStorage.removeItem(STORAGE_ADMIN);
+    irVista("clientes");
+  }
+
+  async function guardarConfigGeneral() {
+    const claveProgramador = sessionStorage.getItem(STORAGE_ADMIN);
+    const telefonoAdmin = document.getElementById("cfg-tel-admin").value.trim();
+    const precioCarrera = document.getElementById("cfg-precio").value.trim();
+    const notaTarifa = document.getElementById("cfg-nota").value.trim();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          tipoRegistro: "guardarConfig",
+          claveProgramador,
+          telefonoAdmin,
+          precioCarrera,
+          notaTarifa
+        })
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        mostrarMsg("msg-cfg", "Configuración guardada en Google Sheets.");
+      } else {
+        mostrarMsg("msg-cfg", data.message || "Error", true);
+      }
+    } catch (e) {
+      mostrarMsg("msg-cfg", "Error de conexión", true);
+    }
+  }
+
+  function limpiarFormConductor() {
+    document.getElementById("titulo-form-cond").textContent = "Agregar Conductor";
+    ["adm-codigo","adm-clave","adm-nombre","adm-telefono","adm-cedula","adm-banco","adm-tel-pm","adm-ced-pm","adm-moto","adm-placa","adm-color","adm-foto"]
+      .forEach(id => document.getElementById(id).value = "");
+    document.getElementById("adm-activo").value = "SI";
+  }
+
+  function editarConductorAdmin(idx) {
+    const c = listaAdminCache[idx];
+    if (!c) return;
+    document.getElementById("titulo-form-cond").textContent = "Editar Conductor: " + c.nombre;
+    document.getElementById("adm-codigo").value = c.codigo;
+    document.getElementById("adm-clave").value = c.clave;
+    document.getElementById("adm-nombre").value = c.nombre;
+    document.getElementById("adm-telefono").value = c.telefono;
+    document.getElementById("adm-cedula").value = c.cedula;
+    document.getElementById("adm-banco").value = c.bancoPagoMovil;
+    document.getElementById("adm-tel-pm").value = c.telefonoPagoMovil;
+    document.getElementById("adm-ced-pm").value = c.cedulaPagoMovil;
+    document.getElementById("adm-moto").value = c.tipoMoto;
+    document.getElementById("adm-placa").value = c.placa;
+    document.getElementById("adm-color").value = c.color;
+    document.getElementById("adm-foto").value = c.linkFoto;
+    document.getElementById("adm-activo").value = c.activoSistema || "SI";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function guardarConductorAdmin() {
+    const claveProgramador = sessionStorage.getItem(STORAGE_ADMIN);
+    const payload = {
+      tipoRegistro: "guardarConductor",
+      claveProgramador,
+      codigo: document.getElementById("adm-codigo").value.trim(),
+      clave: document.getElementById("adm-clave").value.trim(),
+      nombre: document.getElementById("adm-nombre").value.trim(),
+      telefono: document.getElementById("adm-telefono").value.trim(),
+      cedula: document.getElementById("adm-cedula").value.trim(),
+      bancoPagoMovil: document.getElementById("adm-banco").value.trim(),
+      telefonoPagoMovil: document.getElementById("adm-tel-pm").value.trim(),
+      cedulaPagoMovil: document.getElementById("adm-ced-pm").value.trim(),
+      tipoMoto: document.getElementById("adm-moto").value.trim(),
+      placa: document.getElementById("adm-placa").value.trim(),
+      color: document.getElementById("adm-color").value.trim(),
+      linkFoto: document.getElementById("adm-foto").value.trim(),
+      activoSistema: document.getElementById("adm-activo").value
+    };
+
+    if (!payload.codigo || !payload.clave || !payload.nombre || !payload.telefono) {
+      mostrarMsg("msg-adm-cond", "Completa al menos Código, Clave, Nombre y Teléfono.", true);
+      return;
+    }
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        mostrarMsg("msg-adm-cond", data.message);
+        limpiarFormConductor();
+        cargarPanelAdmin(claveProgramador);
+      } else {
+        mostrarMsg("msg-adm-cond", data.message || "Error al guardar", true);
+      }
+    } catch (e) {
+      mostrarMsg("msg-adm-cond", "Error de conexión", true);
+    }
+  }
+
+  function renderizarAdminConductores() {
+    const cont = document.getElementById("lista-admin-conductores");
+    if (!listaAdminCache.length) {
+      cont.innerHTML = `<div class="empty">Aún no hay conductores registrados.</div>`;
+      return;
+    }
+    cont.innerHTML = listaAdminCache.map((c, idx) => `
+      <div class="admin-item">
+        <div>
+          <strong>${c.nombre}</strong> (${c.codigo}) • <span style="color:var(--muted);">${c.estado}</span><br>
+          <span style="font-size:12px; color:var(--muted);">Moto: ${c.tipoMoto} (${c.placa}) • Habilitado: ${c.activoSistema}</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="editarConductorAdmin(${idx})">Editar</button>
+      </div>
+    `).join("");
+  }
+</script>
+
+</body>
+</html>
