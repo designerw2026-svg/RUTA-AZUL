@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0284c7">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -10,10 +10,11 @@
   <title>RUTA AZUL • Moto TAXI</title>
   <style>
     :root {
+      --rail-w: 76px;
       --rail-grad: linear-gradient(180deg, #38bdf8 0%, #0284c7 55%, #0369a1 100%);
-      --bg-dark: radial-gradient(circle at 75% 15%, #1e3a5f 0%, #161b26 52%, #11151d 100%);
-      --glass: rgba(30, 41, 59, 0.62);
-      --glass-border: rgba(125, 211, 252, 0.24);
+      --bg-dark: radial-gradient(circle at 70% 15%, #1e3a5f 0%, #151b26 55%, #0f131c 100%);
+      --glass: rgba(30, 41, 59, 0.66);
+      --glass-border: rgba(125, 211, 252, 0.25);
       --text: #f8fafc;
       --muted: #94a3b8;
       --cyan: #38bdf8;
@@ -26,41 +27,53 @@
     * {
       box-sizing: border-box;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      width: 100%;
       min-height: 100vh;
-      background: var(--bg-dark);
+      background: #0f131c;
+      background-image: var(--bg-dark);
       color: var(--text);
-      display: flex;
       overflow-x: hidden;
     }
 
-    /* Barra lateral azul tipo boceto con degradado y vidrio */
+    .app-shell {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Barra lateral azul */
     .rail {
-      width: 82px;
+      width: var(--rail-w);
+      min-width: var(--rail-w);
       min-height: 100vh;
       background: var(--rail-grad);
       position: fixed;
       top: 0;
       left: 0;
       bottom: 0;
-      z-index: 25;
+      z-index: 20;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 96px 6px 18px 6px;
-      gap: 12px;
-      box-shadow: 6px 0 28px rgba(2, 132, 199, 0.35);
+      padding: 138px 4px 18px 4px;
+      gap: 14px;
+      box-shadow: 4px 0 22px rgba(2, 132, 199, 0.35);
     }
 
     .rail-circle {
-      width: 56px;
-      height: 56px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       border: 2.5px solid rgba(255, 255, 255, 0.92);
-      background: rgba(15, 23, 42, 0.22);
+      background: rgba(15, 23, 42, 0.25);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       color: #ffffff;
@@ -70,48 +83,44 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      transition: transform 0.16s ease, background 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
-      padding: 4px;
+      transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+      padding: 3px;
+      flex-shrink: 0;
     }
-    .rail-circle:hover {
-      transform: translateY(-2px) scale(1.03);
-    }
-    .rail-circle:active {
-      transform: scale(0.94);
-    }
+    .rail-circle:active { transform: scale(0.93); }
     .rail-circle.active {
       background: #ffffff;
       color: #0369a1;
       border-color: #ffffff;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.45), 0 8px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.45), 0 8px 18px rgba(0, 0, 0, 0.32);
     }
 
-    .lbl-sm { font-size: 10.5px; letter-spacing: 0.2px; }
-    .lbl-star { font-size: 22px; color: var(--amber); text-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+    .lbl-sm { font-size: 10px; letter-spacing: 0.2px; }
+    .lbl-star { font-size: 21px; color: var(--amber); text-shadow: 0 2px 8px rgba(0,0,0,0.35); }
     .rail-circle.active .lbl-star { color: #eab308; }
 
-    .rail-spacer { flex: 1; min-height: 8px; }
+    .rail-spacer { flex: 1; min-height: 10px; }
 
     .mc-btn {
-      width: 58px;
-      height: 58px;
-      font-size: 14px;
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.65), rgba(3, 105, 161, 0.55));
+      width: 56px;
+      height: 56px;
+      font-size: 13px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(3, 105, 161, 0.65));
     }
 
-    /* Círculo grande del Logo arriba a la izquierda (montado sobre rail y área principal) */
+    /* Círculo del logo centrado exactamente en la línea divisoria (76px) */
     .logo-float {
       position: fixed;
-      top: 12px;
-      left: 10px;
-      width: 112px;
-      height: 112px;
+      top: 14px;
+      left: 25px; /* centro en 25 + 51 = 76px */
+      width: 102px;
+      height: 102px;
       border-radius: 50%;
       background: linear-gradient(145deg, #0ea5e9, #0369a1);
-      border: 4px solid rgba(15, 23, 42, 0.75);
-      box-shadow: 0 12px 28px rgba(2, 132, 199, 0.45), inset 0 0 18px rgba(255,255,255,0.2);
-      z-index: 35;
+      border: 4px solid rgba(15, 23, 42, 0.82);
+      box-shadow: 0 12px 26px rgba(2, 132, 199, 0.45), inset 0 0 16px rgba(255,255,255,0.22);
+      z-index: 30;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -124,17 +133,18 @@
       object-fit: cover;
     }
 
-    /* Área principal derecha */
+    /* Columna derecha ocupando todo el ancho restante sin huecos */
     .main-col {
-      margin-left: 82px;
-      flex: 1;
-      padding: 16px 14px 96px 38px;
-      max-width: 660px;
+      margin-left: var(--rail-w);
+      width: calc(100% - var(--rail-w));
+      min-height: 100vh;
+      padding: 14px 12px 92px 62px;
+      background: var(--bg-dark);
     }
 
-    /* Cabecera superior derecha: Moto TAXI + Frases Dinámicas */
+    /* Cabecera superior derecha */
     .hero-header {
-      min-height: 102px;
+      min-height: 98px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -142,16 +152,16 @@
     }
     .hero-script {
       font-family: "Brush Script MT", "Segoe Script", cursive;
-      font-size: 27px;
+      font-size: 25px;
       line-height: 1;
       color: #7dd3fc;
       text-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
     }
     .hero-taxi {
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 900;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       color: #ffffff;
       line-height: 1.05;
       margin-top: 2px;
@@ -165,45 +175,46 @@
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--glass-border);
       border-radius: 14px;
-      padding: 8px 12px;
-      min-height: 36px;
+      padding: 7px 10px;
+      min-height: 34px;
       display: flex;
       align-items: center;
     }
     .dynamic-phrase {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #e0f2fe;
-      transition: opacity 0.28s ease, transform 0.28s ease;
+      transition: opacity 0.26s ease, transform 0.26s ease;
     }
     .dynamic-phrase.fade {
       opacity: 0;
       transform: translateY(4px);
     }
 
-    /* Barra de tarifa y apoyo admin en vidrio */
+    /* Barra de tarifa y Llamar Admin */
     .glass-bar {
       background: var(--glass);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
       border-radius: 18px;
-      padding: 11px 13px;
+      padding: 10px 11px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+      gap: 8px;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+      flex-wrap: wrap;
     }
-    .tarifa-mini { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 800; }
-    .tarifa-big { font-size: 16px; font-weight: 900; color: var(--amber); }
+    .tarifa-mini { font-size: 9.5px; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+    .tarifa-big { font-size: 15px; font-weight: 900; color: var(--amber); }
 
     .list-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       color: #cbd5e1;
       margin: 4px 2px 10px 2px;
@@ -211,41 +222,37 @@
       letter-spacing: 0.4px;
     }
 
-    /* Tarjetas de choferes en vidrio + degradado */
+    /* Tarjetas de choferes */
     .chofer-card {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.78) 0%, rgba(15, 23, 42, 0.72) 100%);
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.82) 0%, rgba(15, 23, 42, 0.76) 100%);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 11px 13px;
+      border-radius: 18px;
+      padding: 10px 11px;
       margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
-      transition: transform 0.14s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .chofer-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(56, 189, 248, 0.6);
-      box-shadow: 0 12px 28px rgba(2, 132, 199, 0.22);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.14s ease, border-color 0.2s ease;
     }
     .chofer-card:active { transform: scale(0.985); }
+    .chofer-card:hover { border-color: rgba(56, 189, 248, 0.6); }
 
     .chofer-avatar {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2.5px solid var(--cyan);
+      border: 2px solid var(--cyan);
       background: #1e293b;
       flex-shrink: 0;
     }
     .chofer-info { flex: 1; min-width: 0; }
     .chofer-nombre {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #ffffff;
       white-space: nowrap;
@@ -253,7 +260,7 @@
       text-overflow: ellipsis;
     }
     .chofer-ruta {
-      font-size: 12px;
+      font-size: 11.5px;
       color: #cbd5e1;
       margin-top: 2px;
       white-space: nowrap;
@@ -262,73 +269,67 @@
     }
 
     .estado-tag {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
-      padding: 4px 9px;
+      padding: 4px 8px;
       border-radius: 999px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .tag-libre { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.35); }
     .tag-ocup { background: rgba(234, 179, 8, 0.18); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.35); }
 
-    /* Botón circular flotante Admin abajo a la derecha (como el boceto) */
+    /* Botón circular Admin abajo a la derecha */
     .admin-fab {
       position: fixed;
-      right: 16px;
-      bottom: 16px;
-      width: 62px;
-      height: 62px;
+      right: 14px;
+      bottom: 14px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.45);
       background: linear-gradient(145deg, #38bdf8, #0284c7);
       color: #0f172a;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 900;
       cursor: pointer;
       z-index: 30;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 26px rgba(2, 132, 199, 0.45);
-      transition: transform 0.15s ease;
+      box-shadow: 0 10px 24px rgba(2, 132, 199, 0.45);
     }
-    .admin-fab:hover { transform: scale(1.05); }
-    .admin-fab:active { transform: scale(0.95); }
+    .admin-fab:active { transform: scale(0.94); }
 
-    /* Paneles Conductor y Programador en vidrio */
+    /* Paneles Conductor y Programador */
     .panel {
       background: var(--glass);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
 
     label { display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin-top: 10px; }
     input, select {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
+      padding: 10px 11px;
+      border-radius: 11px;
       border: 1px solid rgba(148, 163, 184, 0.35);
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(15, 23, 42, 0.75);
       color: #ffffff;
       font-size: 14px;
       margin-top: 4px;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--cyan);
     }
 
     .btn {
       width: 100%;
       border: none;
-      border-radius: 12px;
-      padding: 11px 13px;
-      font-size: 13.5px;
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
       text-decoration: none;
@@ -339,18 +340,18 @@
     }
     .btn-green { background: linear-gradient(135deg, #22c55e, #16a34a); color: #052e16; }
     .btn-blue { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #082f49; }
-    .btn-ghost { background: rgba(51, 65, 85, 0.75); color: #f8fafc; border: 1px solid rgba(255,255,255,0.12); }
-    .btn-sm { padding: 7px 10px; font-size: 11.5px; width: auto; border-radius: 10px; }
-    .btn-row { display: flex; gap: 8px; }
+    .btn-ghost { background: rgba(51, 65, 85, 0.8); color: #f8fafc; border: 1px solid rgba(255,255,255,0.12); }
+    .btn-sm { padding: 7px 10px; font-size: 11px; width: auto; border-radius: 10px; }
+    .btn-row { display: flex; gap: 6px; align-items: center; }
 
-    .estado-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 6px; }
+    .estado-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
     .est-btn {
       padding: 9px 4px;
-      border-radius: 11px;
+      border-radius: 10px;
       border: 1px solid rgba(148, 163, 184, 0.35);
       background: rgba(15, 23, 42, 0.65);
       color: #cbd5e1;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -358,13 +359,12 @@
     .est-btn.on-ocup { border-color: var(--yellow); background: rgba(234,179,8,0.2); color: #facc15; }
     .est-btn.on-off { border-color: var(--red); background: rgba(239,68,68,0.2); color: #f87171; }
 
-    /* Modales tipo vidrio oscuro */
+    /* Modales */
     .modal-bg {
       position: fixed;
       inset: 0;
-      background: rgba(2, 6, 23, 0.75);
+      background: rgba(2, 6, 23, 0.78);
       backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -373,249 +373,252 @@
     }
     .modal-bg.open { display: flex; }
     .modal-box {
-      background: linear-gradient(155deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.95));
+      background: linear-gradient(155deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
       border: 1px solid var(--glass-border);
-      border-radius: 22px;
+      border-radius: 20px;
       width: 100%;
-      max-width: 430px;
+      max-width: 420px;
       max-height: 90vh;
       overflow-y: auto;
-      padding: 16px;
-      box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+      padding: 15px;
     }
-    .modal-img { width: 100%; height: 210px; object-fit: cover; border-radius: 15px; background: #1e293b; }
+    .modal-img { width: 100%; height: 200px; object-fit: cover; border-radius: 14px; background: #1e293b; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
     .mini-box {
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
+      border-radius: 11px;
       padding: 8px 10px;
-      font-size: 12.5px;
+      font-size: 12px;
     }
-    .mini-lbl { font-size: 10.5px; color: var(--muted); display: block; }
+    .mini-lbl { font-size: 10px; color: var(--muted); display: block; }
     .pm-card {
       background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(2, 132, 199, 0.08));
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 14px;
-      padding: 11px;
+      border-radius: 13px;
+      padding: 10px;
       margin: 10px 0;
-      font-size: 12.5px;
+      font-size: 12px;
     }
 
     .admin-row {
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 11px;
+      padding: 9px 10px;
       margin-top: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      font-size: 12.5px;
+      font-size: 12px;
     }
 
-    .msg { margin-top: 8px; padding: 9px 11px; border-radius: 10px; font-size: 12px; font-weight: 700; display: none; }
+    .msg { margin-top: 8px; padding: 9px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; display: none; }
     .msg.ok { display: block; background: rgba(34,197,94,0.2); color: #4ade80; }
     .msg.err { display: block; background: rgba(239,68,68,0.2); color: #f87171; }
     .empty {
       background: var(--glass);
       backdrop-filter: blur(10px);
       border: 1px dashed rgba(148, 163, 184, 0.35);
-      border-radius: 18px;
-      padding: 26px 14px;
+      border-radius: 16px;
+      padding: 24px 12px;
       text-align: center;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12.5px;
     }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- LOGO CIRCULAR SUPERIOR IZQUIERDO -->
-  <div class="logo-float" onclick="volverClientes()" title="RUTA AZUL">
-    <img id="app-logo" src="icon.svg" alt="Logo RUTA AZUL" onerror="this.src='icon.svg'">
-  </div>
+  <div class="app-shell">
 
-  <!-- BARRA LATERAL AZUL (ESTILO BOCETO) -->
-  <aside class="rail">
-    <button class="rail-circle active" id="flt-TODOS" onclick="aplicarFiltro('TODOS')">
-      <span class="lbl-sm">Todos</span>
-    </button>
+    <!-- LOGO CIRCULAR CENTRADO EN LA LÍNEA DIVISORIA -->
+    <div class="logo-float" onclick="volverClientes()" title="RUTA AZUL">
+      <img id="app-logo" src="icon.svg" alt="Logo RUTA AZUL" onerror="this.src='icon.svg'">
+    </div>
 
-    <button class="rail-circle" id="flt-TUREN" onclick="aplicarFiltro('TUREN')">
-      <span class="lbl-sm">TUREN</span>
-    </button>
+    <!-- BARRA LATERAL AZUL -->
+    <aside class="rail">
+      <button class="rail-circle active" id="flt-TODOS" onclick="aplicarFiltro('TODOS')">
+        <span class="lbl-sm">Todos</span>
+      </button>
 
-    <button class="rail-circle" id="flt-PIRITU" onclick="aplicarFiltro('PIRITU')">
-      <span class="lbl-sm">PIRITU</span>
-    </button>
+      <button class="rail-circle" id="flt-TUREN" onclick="aplicarFiltro('TUREN')">
+        <span class="lbl-sm">TUREN</span>
+      </button>
 
-    <button class="rail-circle" id="flt-RECURRENTE" onclick="aplicarFiltro('RECURRENTE')" title="Chofer más usado">
-      <span class="lbl-star">★</span>
-    </button>
+      <button class="rail-circle" id="flt-PIRITU" onclick="aplicarFiltro('PIRITU')">
+        <span class="lbl-sm">PIRITU</span>
+      </button>
 
-    <div class="rail-spacer"></div>
+      <button class="rail-circle" id="flt-RECURRENTE" onclick="aplicarFiltro('RECURRENTE')" title="Chofer más usado">
+        <span class="lbl-star">★</span>
+      </button>
 
-    <button class="rail-circle mc-btn" onclick="abrirModoConductor()" title="Modo Conductor">
-      <span>M-C</span>
-    </button>
-  </aside>
+      <div class="rail-spacer"></div>
 
-  <!-- CONTENIDO DERECHO -->
-  <main class="main-col">
+      <button class="rail-circle mc-btn" onclick="abrirModoConductor()" title="Modo Conductor">
+        <span>M-C</span>
+      </button>
+    </aside>
 
-    <!-- VISTA CLIENTES -->
-    <section id="vista-clientes">
-      <div class="hero-header">
-        <div class="hero-script">Moto</div>
-        <div class="hero-taxi">TAXI</div>
-        <div class="dynamic-box">
-          <div class="dynamic-phrase" id="frase-dinamica">Tu ruta segura Píritu ↔ Turén</div>
-        </div>
-      </div>
+    <!-- CONTENIDO DERECHO -->
+    <main class="main-col">
 
-      <div class="glass-bar">
-        <div>
-          <div class="tarifa-mini">Precio carrera</div>
-          <div class="tarifa-big" id="lbl-precio">Cargando...</div>
-        </div>
-        <div class="btn-row" style="width:auto;">
-          <a id="btn-llamar-admin" href="tel:" class="btn btn-blue btn-sm">📞 Llamar Admin</a>
-          <button class="btn btn-ghost btn-sm" onclick="cargarEstadoPublico()">↻</button>
-        </div>
-      </div>
-
-      <div class="list-meta">
-        <span id="titulo-lista">Choferes disponibles</span>
-        <span id="contador-lista">0</span>
-      </div>
-
-      <div id="lista-choferes">
-        <div class="empty">Cargando choferes...</div>
-      </div>
-    </section>
-
-    <!-- VISTA MODO CONDUCTOR (M-C) -->
-    <section id="vista-conductor" class="hidden">
-      <div class="hero-header" style="min-height:auto; margin-bottom:10px;">
-        <div class="hero-taxi" style="font-size:24px;">Modo Conductor</div>
-        <div class="dynamic-phrase" style="color:var(--cyan); margin-top:4px;">Actualiza tu ubicación y ruta en tiempo real</div>
-      </div>
-
-      <div class="btn-row" style="margin-bottom:10px;">
-        <button class="btn btn-ghost btn-sm" onclick="volverClientes()">← Volver a la lista</button>
-      </div>
-
-      <div id="conductor-login" class="panel">
-        <div style="font-size:12px; color:var(--muted);">Quedará guardado en este teléfono para entrar directo.</div>
-        <label>Código</label>
-        <input type="text" id="login-codigo" placeholder="Ej: MOTO01">
-        <label>Clave</label>
-        <input type="password" id="login-clave" placeholder="Tu clave">
-        <button class="btn btn-blue" style="margin-top:12px;" onclick="iniciarSesionConductor()">Entrar</button>
-        <div id="msg-login" class="msg"></div>
-      </div>
-
-      <div id="conductor-panel" class="panel hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <div>
-            <div style="font-size:10px; color:var(--muted); font-weight:800;">CONDUCTOR ACTIVO</div>
-            <div id="cond-nombre-sesion" style="font-size:16px; font-weight:900;"></div>
+      <!-- VISTA CLIENTES -->
+      <section id="vista-clientes">
+        <div class="hero-header">
+          <div class="hero-script">Moto</div>
+          <div class="hero-taxi">TAXI</div>
+          <div class="dynamic-box">
+            <div class="dynamic-phrase" id="frase-dinamica">Tu ruta segura Píritu ↔ Turén</div>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="cerrarSesionConductor()">Salir</button>
         </div>
 
-        <label>Estado</label>
-        <div class="estado-grid">
-          <button type="button" class="est-btn" id="st-Disponible" onclick="seleccionarEstado('Disponible')">🟢 Libre</button>
-          <button type="button" class="est-btn" id="st-Ocupado" onclick="seleccionarEstado('Ocupado')">🟡 Ocupado</button>
-          <button type="button" class="est-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 Off</button>
+        <div class="glass-bar">
+          <div>
+            <div class="tarifa-mini">Precio carrera</div>
+            <div class="tarifa-big" id="lbl-precio">Cargando...</div>
+          </div>
+          <div class="btn-row" style="width:auto;">
+            <a id="btn-llamar-admin" href="tel:" class="btn btn-blue btn-sm">📞 Admin</a>
+            <button class="btn btn-ghost btn-sm" onclick="cargarEstadoPublico()">↻</button>
+          </div>
         </div>
 
-        <label>Ruta</label>
-        <select id="cond-ruta">
-          <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
-          <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
-        </select>
-
-        <label>Ubicación actual (reemplaza la anterior)</label>
-        <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma">
-
-        <button class="btn btn-green" style="margin-top:12px;" onclick="guardarEstadoConductor()">Guardar Estado y Ubicación</button>
-        <div id="msg-cond" class="msg"></div>
-      </div>
-    </section>
-
-    <!-- VISTA PROGRAMADOR / ADMIN -->
-    <section id="vista-admin" class="hidden">
-      <div class="hero-header" style="min-height:auto; margin-bottom:10px;">
-        <div class="hero-taxi" style="font-size:24px;">Modo Programador</div>
-      </div>
-
-      <div class="btn-row" style="margin-bottom:10px;">
-        <button class="btn btn-ghost btn-sm" onclick="salirAdmin()">← Salir de Admin</button>
-      </div>
-
-      <div class="panel">
-        <div style="font-weight:800; font-size:14px;">Configuración General</div>
-        <label>Teléfono del Administrador</label>
-        <input type="tel" id="cfg-tel-admin" placeholder="04141234567">
-        <label>Precio General de la Carrera</label>
-        <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
-        <label>Link del Logo (imgbb)</label>
-        <input type="url" id="cfg-logo" placeholder="https://i.ibb.co/...">
-        <button class="btn btn-blue" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Ajustes</button>
-        <div id="msg-cfg" class="msg"></div>
-      </div>
-
-      <div class="panel">
-        <div style="font-weight:800; font-size:14px;" id="titulo-form-cond">Agregar Chofer</div>
-        <label>Código</label>
-        <input type="text" id="adm-codigo" placeholder="MOTO01">
-        <label>Clave</label>
-        <input type="text" id="adm-clave" placeholder="1234">
-        <label>Nombre</label>
-        <input type="text" id="adm-nombre">
-        <label>Teléfono</label>
-        <input type="tel" id="adm-telefono">
-        <label>Cédula</label>
-        <input type="text" id="adm-cedula">
-        <label>Banco Pago Móvil</label>
-        <input type="text" id="adm-banco">
-        <label>Teléfono Pago Móvil</label>
-        <input type="tel" id="adm-tel-pm">
-        <label>Cédula Pago Móvil</label>
-        <input type="text" id="adm-ced-pm">
-        <label>Tipo de Moto</label>
-        <input type="text" id="adm-moto">
-        <label>Placa</label>
-        <input type="text" id="adm-placa">
-        <label>Color</label>
-        <input type="text" id="adm-color">
-        <label>Link Foto Chofer (imgbb)</label>
-        <input type="url" id="adm-foto" placeholder="https://i.ibb.co/...">
-        <label>Estado en sistema</label>
-        <select id="adm-activo">
-          <option value="SI">SI</option>
-          <option value="NO">NO</option>
-        </select>
-
-        <div class="btn-row" style="margin-top:12px;">
-          <button class="btn btn-green" onclick="guardarConductorAdmin()">Guardar</button>
-          <button class="btn btn-ghost" onclick="limpiarFormConductor()">Limpiar</button>
+        <div class="list-meta">
+          <span id="titulo-lista">Choferes disponibles</span>
+          <span id="contador-lista">0</span>
         </div>
-        <div id="msg-adm-cond" class="msg"></div>
-      </div>
 
-      <div class="panel">
-        <div style="font-weight:800; font-size:14px;">Choferes Registrados</div>
-        <div id="lista-admin-conductores"></div>
-      </div>
-    </section>
+        <div id="lista-choferes">
+          <div class="empty">Cargando choferes...</div>
+        </div>
+      </section>
 
-  </main>
+      <!-- VISTA MODO CONDUCTOR (M-C) -->
+      <section id="vista-conductor" class="hidden">
+        <div class="hero-header" style="min-height:auto; margin-bottom:10px;">
+          <div class="hero-taxi" style="font-size:22px;">Modo Conductor</div>
+          <div class="dynamic-phrase" style="color:var(--cyan); margin-top:4px;">Actualiza tu ubicación y ruta</div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="volverClientes()">← Volver</button>
+        </div>
+
+        <div id="conductor-login" class="panel">
+          <div style="font-size:12px; color:var(--muted);">Quedará guardado en este teléfono.</div>
+          <label>Código</label>
+          <input type="text" id="login-codigo" placeholder="Ej: MOTO01">
+          <label>Clave</label>
+          <input type="password" id="login-clave" placeholder="Tu clave">
+          <button class="btn btn-blue" style="margin-top:12px;" onclick="iniciarSesionConductor()">Entrar</button>
+          <div id="msg-login" class="msg"></div>
+        </div>
+
+        <div id="conductor-panel" class="panel hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div>
+              <div style="font-size:10px; color:var(--muted); font-weight:800;">CONDUCTOR ACTIVO</div>
+              <div id="cond-nombre-sesion" style="font-size:15px; font-weight:900;"></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="cerrarSesionConductor()">Salir</button>
+          </div>
+
+          <label>Estado</label>
+          <div class="estado-grid">
+            <button type="button" class="est-btn" id="st-Disponible" onclick="seleccionarEstado('Disponible')">🟢 Libre</button>
+            <button type="button" class="est-btn" id="st-Ocupado" onclick="seleccionarEstado('Ocupado')">🟡 Ocupado</button>
+            <button type="button" class="est-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 Off</button>
+          </div>
+
+          <label>Ruta</label>
+          <select id="cond-ruta">
+            <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
+            <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
+          </select>
+
+          <label>Ubicación actual (reemplaza la anterior)</label>
+          <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma">
+
+          <button class="btn btn-green" style="margin-top:12px;" onclick="guardarEstadoConductor()">Guardar Estado y Ubicación</button>
+          <div id="msg-cond" class="msg"></div>
+        </div>
+      </section>
+
+      <!-- VISTA PROGRAMADOR / ADMIN -->
+      <section id="vista-admin" class="hidden">
+        <div class="hero-header" style="min-height:auto; margin-bottom:10px;">
+          <div class="hero-taxi" style="font-size:22px;">Modo Programador</div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="salirAdmin()">← Salir</button>
+        </div>
+
+        <div class="panel">
+          <div style="font-weight:800; font-size:13.5px;">Configuración General</div>
+          <label>Teléfono del Administrador</label>
+          <input type="tel" id="cfg-tel-admin" placeholder="04141234567">
+          <label>Precio General de la Carrera</label>
+          <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
+          <label>Link del Logo (imgbb)</label>
+          <input type="url" id="cfg-logo" placeholder="https://i.ibb.co/...">
+          <button class="btn btn-blue" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Ajustes</button>
+          <div id="msg-cfg" class="msg"></div>
+        </div>
+
+        <div class="panel">
+          <div style="font-weight:800; font-size:13.5px;" id="titulo-form-cond">Agregar Chofer</div>
+          <label>Código</label>
+          <input type="text" id="adm-codigo" placeholder="MOTO01">
+          <label>Clave</label>
+          <input type="text" id="adm-clave" placeholder="1234">
+          <label>Nombre</label>
+          <input type="text" id="adm-nombre">
+          <label>Teléfono</label>
+          <input type="tel" id="adm-telefono">
+          <label>Cédula</label>
+          <input type="text" id="adm-cedula">
+          <label>Banco Pago Móvil</label>
+          <input type="text" id="adm-banco">
+          <label>Teléfono Pago Móvil</label>
+          <input type="tel" id="adm-tel-pm">
+          <label>Cédula Pago Móvil</label>
+          <input type="text" id="adm-ced-pm">
+          <label>Tipo de Moto</label>
+          <input type="text" id="adm-moto">
+          <label>Placa</label>
+          <input type="text" id="adm-placa">
+          <label>Color</label>
+          <input type="text" id="adm-color">
+          <label>Link Foto Chofer (imgbb)</label>
+          <input type="url" id="adm-foto" placeholder="https://i.ibb.co/...">
+          <label>Estado en sistema</label>
+          <select id="adm-activo">
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="btn btn-green" onclick="guardarConductorAdmin()">Guardar</button>
+            <button class="btn btn-ghost" onclick="limpiarFormConductor()">Limpiar</button>
+          </div>
+          <div id="msg-adm-cond" class="msg"></div>
+        </div>
+
+        <div class="panel">
+          <div style="font-weight:800; font-size:13.5px;">Choferes Registrados</div>
+          <div id="lista-admin-conductores"></div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
 
   <!-- BOTÓN CIRCULAR ADMIN ABAJO A LA DERECHA -->
   <button class="admin-fab" onclick="abrirModalClaveAdmin()" title="Modo Programador">Admin</button>
@@ -628,7 +631,7 @@
   <!-- MODAL CLAVE PROGRAMADOR -->
   <div class="modal-bg" id="modal-clave" onclick="if(event.target.id==='modal-clave') cerrarModalClave()">
     <div class="modal-box">
-      <div style="font-size:16px; font-weight:900;">Modo Programador</div>
+      <div style="font-size:15px; font-weight:900;">Modo Programador</div>
       <label>Clave de acceso</label>
       <input type="password" id="input-clave-admin" placeholder="••••••">
       <div class="btn-row" style="margin-top:12px;">
@@ -641,7 +644,7 @@
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbzDUzyCzaap15ns5O75RGq0bOWCN_QxQU1CHU5LV8VDkzrrZTbU-zB0PRAqG4ejV91a/exec";
-  const LOGO_IMGBB_URL = ""; // Opcional: pega aquí el link directo de imgbb del logo
+  const LOGO_IMGBB_URL = "";
 
   const STORAGE_COND = "ruta_azul_conductor_v1";
   const STORAGE_ADMIN = "ruta_azul_admin_v1";
@@ -772,7 +775,7 @@
       TODOS: "Choferes en ruta",
       TUREN: "Choferes en Turén",
       PIRITU: "Choferes en Píritu",
-      RECURRENTE: "Tu chofer recurrente"
+      RECURRENTE: "Chofer recurrente"
     };
     document.getElementById("titulo-lista").textContent = titulos[filtroActual] || "Choferes";
 
@@ -793,7 +796,7 @@
       if (!fav) {
         document.getElementById("contador-lista").textContent = "0";
         document.getElementById("lista-choferes").innerHTML =
-          `<div class="empty">Aún no tienes un chofer recurrente.<br>Cuando pidas un servicio, aquí saldrá el que más uses.</div>`;
+          `<div class="empty">Aún no tienes un chofer recurrente.</div>`;
         return;
       }
       items = items.filter(({ c }) => c.codigo === fav);
@@ -803,7 +806,7 @@
 
     if (!items.length) {
       document.getElementById("lista-choferes").innerHTML =
-        `<div class="empty">No hay choferes en este filtro en este momento.</div>`;
+        `<div class="empty">No hay choferes en este filtro.</div>`;
       return;
     }
 
@@ -836,8 +839,8 @@
         <button class="btn btn-ghost btn-sm" onclick="cerrarModalChofer()">✕</button>
       </div>
       <img class="modal-img" src="${foto}" alt="${c.nombre}" onerror="this.src='icon.svg'">
-      <h2 style="margin:10px 0 2px 0; font-size:19px;">${c.nombre}</h2>
-      <div style="font-size:12.5px; color:var(--muted);">${c.ruta} • <strong>${c.ubicacion || "Sin ubicación anotada"}</strong></div>
+      <h2 style="margin:10px 0 2px 0; font-size:18px;">${c.nombre}</h2>
+      <div style="font-size:12px; color:var(--muted);">${c.ruta} • <strong>${c.ubicacion || "Sin ubicación"}</strong></div>
 
       <div class="grid-2">
         <div class="mini-box"><span class="mini-lbl">Teléfono</span><strong>${c.telefono || "-"}</strong></div>
@@ -856,7 +859,7 @@
         <div>Cédula: <strong>${c.cedulaPagoMovil || "-"}</strong></div>
       </div>
 
-      <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px; margin-bottom:10px;">
+      <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px; margin-bottom:10px;">
         <div style="font-size:11px; font-weight:700; color:var(--cyan);">Pedir por WhatsApp (registra tu IP):</div>
         <input type="text" id="cli-nombre" placeholder="Tu nombre">
         <input type="tel" id="cli-telefono" placeholder="Tu teléfono">
@@ -878,7 +881,7 @@
 
   function copiarPM(banco, tel, ced) {
     const txt = `Pago Móvil\nBanco: ${banco}\nTeléfono: ${tel}\nCédula: ${ced}`;
-    navigator.clipboard.writeText(txt).then(() => mostrarMsg("msg-ficha", "Copiado al portapapeles."));
+    navigator.clipboard.writeText(txt).then(() => mostrarMsg("msg-ficha", "Copiado."));
   }
 
   async function obtenerIP() {
@@ -928,7 +931,6 @@
     window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
-  /* --- CONDUCTOR (M-C) --- */
   function cargarSesionConductor() {
     const raw = localStorage.getItem(STORAGE_COND);
     if (!raw) return;
@@ -1026,7 +1028,6 @@
     }
   }
 
-  /* --- PROGRAMADOR (584627) --- */
   function abrirModalClaveAdmin() {
     const k = sessionStorage.getItem(STORAGE_ADMIN);
     if (k) return cargarAdmin(k);
