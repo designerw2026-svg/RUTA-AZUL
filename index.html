@@ -3,488 +3,833 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TAXI - Píritu ↔ Turén</title>
+  <meta name="theme-color" content="#0284c7">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>RUTA AZUL • Moto Taxi</title>
   <style>
     :root {
-      --bg: #f3f5f8;
-      --card: #ffffff;
-      --primary: #111827;
-      --accent: #f59e0b;
-      --green: #16a34a;
-      --yellow: #ca8a04;
-      --red: #dc2626;
-      --blue: #2563eb;
-      --muted: #6b7280;
-      --border: #e5e7eb;
+      --rail-bg: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+      --main-bg: #1e222d;
+      --card-bg: #272c3a;
+      --card-hover: #2f3546;
+      --line: rgba(255, 255, 255, 0.09);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --amber: #fbbf24;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
     }
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, Arial, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--primary); padding-bottom: 40px; }
 
-    header {
-      background: var(--primary); color: #fff; padding: 14px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 20;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: 0.5px; }
-    .brand span.badge { background: var(--accent); color: #111; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
-    .top-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      background: rgba(255,255,255,0.12); color: #fff; border: none;
-      padding: 7px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
-    }
-    .icon-btn.active { background: var(--accent); color: #111; }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-    .container { max-width: 540px; margin: 14px auto; padding: 0 14px; }
-
-    .tarifa-bar {
-      background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;
-      padding: 12px 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    body {
+      margin: 0;
+      background: var(--main-bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
     }
-    .tarifa-precio { font-size: 17px; font-weight: 800; color: #92400e; }
-    .tarifa-sub { font-size: 12px; color: #78350f; }
 
-    .central-box {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px 14px; margin-bottom: 14px;
+    /* Barra lateral azul tipo referencia */
+    .rail {
+      width: 74px;
+      min-height: 100vh;
+      background: var(--rail-bg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 6px;
+      gap: 10px;
+      box-shadow: 4px 0 20px rgba(2, 132, 199, 0.28);
     }
-    .central-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #374151; }
-    .btn-row { display: flex; gap: 8px; }
+
+    .rail-tag {
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      color: #e0f2fe;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .rail-btn {
+      width: 58px;
+      border: none;
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 8px 4px;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: transform 0.12s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .rail-btn:active { transform: scale(0.95); }
+    .rail-btn.active {
+      background: #ffffff;
+      color: #0369a1;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+    }
+    .rail-ico { font-size: 17px; line-height: 1; }
+    .rail-lbl { font-size: 9.5px; font-weight: 800; line-height: 1.1; text-align: center; }
+
+    .rail-call {
+      background: rgba(15, 23, 42, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+    }
+
+    /* Área principal derecha */
+    .main-area {
+      margin-left: 74px;
+      flex: 1;
+      padding: 16px 14px 96px 14px;
+      max-width: 640px;
+    }
+
+    .top-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 12px;
+    }
+    .logo-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--card-bg);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+    .brand-name { font-size: 18px; font-weight: 900; letter-spacing: 0.4px; color: #fff; }
+    .dynamic-msg {
+      font-size: 12.5px;
+      color: var(--cyan);
+      font-weight: 600;
+      margin-top: 2px;
+      min-height: 18px;
+      transition: opacity 0.25s ease;
+    }
+
+    .info-strip {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--amber);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .price-label { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+    .price-val { font-size: 16px; font-weight: 900; color: var(--amber); }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Lista derecha con foto y nombre */
+    .driver-row {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 11px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.08s ease;
+    }
+    .driver-row:hover { background: var(--card-hover); }
+    .driver-row:active { transform: scale(0.99); }
+
+    .driver-pic {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--cyan);
+      background: #334155;
+      flex-shrink: 0;
+    }
+    .driver-txt { flex: 1; min-width: 0; }
+    .driver-title {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .driver-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-st {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .st-disp { background: rgba(34, 197, 94, 0.16); color: #4ade80; }
+    .st-ocup { background: rgba(234, 179, 8, 0.16); color: #facc15; }
+
+    /* Botón flotante (+) tipo referencia */
+    .fab-plus {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #0f172a;
+      font-size: 28px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 35;
+      box-shadow: 0 10px 24px rgba(2, 132, 199, 0.45);
+    }
+
+    /* Popover del (+) con Modo Conductor y Programador chiquito */
+    .fab-menu {
+      position: fixed;
+      right: 18px;
+      bottom: 82px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 10px;
+      width: 210px;
+      z-index: 36;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .fab-menu.open { display: flex; }
+
+    .fab-item-cond {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+    }
+    .fab-item-prog {
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      padding: 5px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-align: right;
+      cursor: pointer;
+    }
+    .fab-item-prog:hover { color: #e2e8f0; }
+
+    /* Paneles y modales */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 14px;
+    }
+    label { display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin-top: 10px; }
+    input, select {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #181c26;
+      color: #fff;
+      font-size: 14px;
+      margin-top: 4px;
+    }
 
     .btn {
-      width: 100%; border: none; border-radius: 10px; padding: 11px 12px;
-      font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%;
+      border: none;
+      border-radius: 11px;
+      padding: 11px 12px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .btn-green { background: var(--green); color: #fff; }
-    .btn-blue { background: var(--blue); color: #fff; }
-    .btn-dark { background: var(--primary); color: #fff; }
-    .btn-amber { background: var(--accent); color: #111; }
-    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
-    .btn-sm { padding: 7px 10px; font-size: 12px; width: auto; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-blue { background: var(--cyan); color: #082f49; }
+    .btn-ghost { background: #334155; color: #f8fafc; }
+    .btn-sm { padding: 7px 10px; font-size: 11.5px; width: auto; }
+    .btn-row { display: flex; gap: 8px; }
 
-    /* Lista compacta de conductores */
-    .driver-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-      padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
-      cursor: pointer; transition: transform 0.08s ease, box-shadow 0.12s ease;
+    .estado-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 6px; }
+    .est-btn {
+      padding: 9px 4px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #181c26;
+      color: #cbd5e1;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
     }
-    .driver-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-    .driver-card:active { transform: scale(0.99); }
-    .avatar {
-      width: 58px; height: 58px; border-radius: 50%; object-fit: cover;
-      background: #e5e7eb; border: 2px solid var(--border); flex-shrink: 0;
-    }
-    .driver-main { flex: 1; min-width: 0; }
-    .driver-name { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .driver-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-    .pill {
-      padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap;
-    }
-    .pill-disp { background: #dcfce7; color: #166534; }
-    .pill-ocup { background: #fef9c3; color: #854d0e; }
+    .est-btn.on-disp { border-color: var(--green); background: rgba(34,197,94,0.18); color: #4ade80; }
+    .est-btn.on-ocup { border-color: var(--yellow); background: rgba(234,179,8,0.18); color: #facc15; }
+    .est-btn.on-off { border-color: var(--red); background: rgba(239,68,68,0.18); color: #f87171; }
 
-    /* Modal / Ficha completa del conductor */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 40;
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 50;
     }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      background: #fff; border-radius: 16px; max-width: 440px; width: 100%;
-      max-height: 90vh; overflow-y: auto; padding: 18px; position: relative;
+    .modal-bg.open { display: flex; }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 430px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 16px;
     }
-    .modal-foto { width: 100%; height: 220px; object-fit: cover; border-radius: 12px; background: #e5e7eb; }
-    .dato-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; font-size: 13px; }
-    .dato-box { background: #f9fafb; border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px; }
-    .dato-label { font-size: 11px; color: var(--muted); display: block; }
-    .pm-box {
-      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
-      padding: 12px; margin: 12px 0; font-size: 13px;
+    .modal-img { width: 100%; height: 210px; object-fit: cover; border-radius: 13px; background: #334155; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .mini-box { background: #181c26; border: 1px solid var(--line); border-radius: 11px; padding: 8px 10px; font-size: 12.5px; }
+    .mini-lbl { font-size: 10.5px; color: var(--muted); display: block; }
+    .pm-card { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 11px; margin: 10px 0; font-size: 12.5px; }
+
+    .admin-row {
+      background: #181c26;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
     }
 
-    /* Secciones de Modo Conductor y Programador */
-    .panel {
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-      padding: 16px; margin-bottom: 14px;
-    }
-    label { display: block; font-size: 12px; font-weight: 700; margin-top: 10px; color: #374151; }
-    input, select {
-      width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 9px;
-      margin-top: 4px; font-size: 14px; background: #fff;
-    }
-    .estado-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
-    .estado-btn {
-      padding: 10px 6px; border-radius: 10px; border: 2px solid var(--border);
-      background: #fff; font-weight: 700; font-size: 12px; cursor: pointer;
-    }
-    .estado-btn.sel-disp { border-color: var(--green); background: #dcfce7; color: #166534; }
-    .estado-btn.sel-ocup { border-color: var(--yellow); background: #fef9c3; color: #854d0e; }
-    .estado-btn.sel-off { border-color: var(--red); background: #fee2e2; color: #991b1b; }
-
-    .msg { margin-top: 10px; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 600; display: none; }
-    .msg.ok { display: block; background: #dcfce7; color: #166534; }
-    .msg.err { display: block; background: #fee2e2; color: #991b1b; }
-
-    .admin-item {
-      border: 1px solid var(--border); border-radius: 10px; padding: 10px;
-      margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-      font-size: 13px;
-    }
+    .msg { margin-top: 8px; padding: 9px 11px; border-radius: 9px; font-size: 12px; font-weight: 700; display: none; }
+    .msg.ok { display: block; background: rgba(34,197,94,0.18); color: #4ade80; }
+    .msg.err { display: block; background: rgba(239,68,68,0.18); color: #f87171; }
+    .empty { background: var(--card-bg); border: 1px dashed #475569; border-radius: 14px; padding: 24px 14px; text-align: center; color: var(--muted); font-size: 13px; }
     .hidden { display: none !important; }
-    .empty { text-align: center; padding: 28px 14px; color: var(--muted); font-size: 14px; }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <span>TAXI</span>
-    <span class="badge">Píritu ↔ Turén</span>
-  </div>
-  <div class="top-actions">
-    <button class="icon-btn active" id="nav-clientes" onclick="irVista('clientes')">Clientes</button>
-    <button class="icon-btn" id="nav-conductor" onclick="irVista('conductor')">Conductor</button>
-    <button class="icon-btn" id="nav-admin" onclick="abrirModalAdmin()">🔒 Admin</button>
-  </div>
-</header>
+  <!-- BARRA LATERAL AZUL (ESTILO REFERENCIA) -->
+  <aside class="rail">
+    <div class="rail-tag">RUTA</div>
 
-<div class="container">
+    <button class="rail-btn active" id="flt-TODOS" onclick="aplicarFiltro('TODOS')">
+      <span class="rail-ico">🏍️</span>
+      <span class="rail-lbl">Todos</span>
+    </button>
 
-  <!-- VISTA CLIENTES -->
-  <section id="vista-clientes">
-    <div class="tarifa-bar">
-      <div>
-        <div class="tarifa-sub" id="lbl-nota-tarifa">Tarifa general de la ruta</div>
-        <div class="tarifa-precio" id="lbl-precio-carrera">Cargando...</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="cargarEstadoPublico()">↻ Actualizar</button>
-    </div>
+    <button class="rail-btn" id="flt-TUREN" onclick="aplicarFiltro('TUREN')">
+      <span class="rail-ico">📍</span>
+      <span class="rail-lbl">Turén</span>
+    </button>
 
-    <div class="central-box" id="box-central">
-      <div class="central-title">📞 Central / Administrador (si no hay disponibilidad o no responde)</div>
-      <div class="btn-row">
-        <a id="btn-llamar-admin" href="#" class="btn btn-blue">Llamar Central</a>
-        <a id="btn-wa-admin" href="#" target="_blank" class="btn btn-green">WhatsApp Central</a>
-      </div>
-    </div>
+    <button class="rail-btn" id="flt-PIRITU" onclick="aplicarFiltro('PIRITU')">
+      <span class="rail-ico">📌</span>
+      <span class="rail-lbl">Píritu</span>
+    </button>
 
-    <div id="lista-conductores">
-      <div class="empty">Cargando conductores disponibles...</div>
-    </div>
-  </section>
+    <button class="rail-btn" id="flt-RECURRENTE" onclick="aplicarFiltro('RECURRENTE')">
+      <span class="rail-ico">⭐</span>
+      <span class="rail-lbl">Recurrente</span>
+    </button>
 
-  <!-- VISTA CONDUCTOR -->
-  <section id="vista-conductor" class="hidden">
-    <div id="conductor-login" class="panel">
-      <h3 style="margin:0 0 6px 0;">Ingreso Modo Conductor</h3>
-      <div style="font-size:12px; color:var(--muted);">Quedará guardado en este teléfono para entrar directo.</div>
-      <label>Código de Conductor</label>
-      <input type="text" id="login-codigo" placeholder="Ej: COND-01">
-      <label>Clave</label>
-      <input type="password" id="login-clave" placeholder="Tu clave">
-      <button class="btn btn-dark" style="margin-top:14px;" onclick="iniciarSesionConductor()">Entrar</button>
-      <div id="msg-login" class="msg"></div>
-    </div>
+    <a class="rail-btn rail-call" id="rail-llamar-admin" href="tel:">
+      <span class="rail-ico">📞</span>
+      <span class="rail-lbl">Admin</span>
+    </a>
+  </aside>
 
-    <div id="conductor-panel" class="panel hidden">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <div>
-          <div style="font-size:12px; color:var(--muted);">Conductor conectado</div>
-          <div id="cond-nombre-sesion" style="font-size:18px; font-weight:800;"></div>
+  <!-- CONTENIDO PRINCIPAL A LA DERECHA -->
+  <main class="main-area">
+
+    <!-- VISTA CLIENTES -->
+    <section id="vista-clientes">
+      <div class="top-brand">
+        <div class="logo-box">
+          <img id="app-logo" src="icon.svg" alt="Logo RUTA AZUL" onerror="this.src='icon.svg'">
         </div>
-        <button class="btn btn-outline btn-sm" onclick="cerrarSesionConductor()">Salir</button>
+        <div>
+          <div class="brand-name">RUTA AZUL</div>
+          <div class="dynamic-msg" id="mensaje-dinamico">Tu ruta segura Píritu ↔ Turén</div>
+        </div>
       </div>
 
-      <label>1. Estado actual</label>
-      <div class="estado-group">
-        <button type="button" class="estado-btn" id="st-Disponible" onclick="seleccionarEstado('Disponible')">🟢 Disponible</button>
-        <button type="button" class="estado-btn" id="st-Ocupado" onclick="seleccionarEstado('Ocupado')">🟡 Ocupado</button>
-        <button type="button" class="estado-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 No trabajo</button>
+      <div class="info-strip">
+        <div>
+          <div class="price-label">Precio de la carrera</div>
+          <div class="price-val" id="lbl-precio">Cargando...</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="cargarEstadoPublico()">↻ Actualizar</button>
       </div>
 
-      <label>2. Dirección de ruta</label>
-      <select id="cond-ruta">
-        <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
-        <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
-      </select>
-
-      <label>3. Ubicación actual (escribe dónde estás; reemplaza la anterior)</label>
-      <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma, Redoma, Plaza...">
-
-      <button class="btn btn-green" style="margin-top:14px;" onclick="guardarEstadoConductor()">Guardar mi Estado y Ubicación</button>
-      <div id="msg-cond" class="msg"></div>
-    </div>
-  </section>
-
-  <!-- VISTA PROGRAMADOR / ADMIN -->
-  <section id="vista-admin" class="hidden">
-    <div class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="margin:0;">Configuración General</h3>
-        <button class="btn btn-outline btn-sm" onclick="salirAdmin()">Cerrar Admin</button>
+      <div class="section-head">
+        <span id="titulo-lista-choferes">Choferes en ruta</span>
+        <span id="contador-choferes">0</span>
       </div>
 
-      <label>Teléfono del Administrador / Central (con código país o local, ej: 04140000000)</label>
-      <input type="tel" id="cfg-tel-admin" placeholder="Ej: 04141234567">
-
-      <label>Precio General de la Carrera</label>
-      <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
-
-      <label>Referencia / Nota de Tarifa</label>
-      <input type="text" id="cfg-nota" placeholder="Ej: Tarifa base Píritu ↔ Turén">
-
-      <button class="btn btn-dark" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Configuración</button>
-      <div id="msg-cfg" class="msg"></div>
-    </div>
-
-    <div class="panel">
-      <h3 style="margin:0 0 4px 0;" id="titulo-form-cond">Agregar Conductor</h3>
-      <div style="font-size:12px; color:var(--muted);">Si escribes un Código existente, editará ese conductor.</div>
-
-      <label>Código único (para entrar a la app)</label>
-      <input type="text" id="adm-codigo" placeholder="Ej: MOTO01" required>
-
-      <label>Clave del Conductor</label>
-      <input type="text" id="adm-clave" placeholder="Ej: 1234" required>
-
-      <label>Nombre y Apellido</label>
-      <input type="text" id="adm-nombre" required>
-
-      <label>Teléfono (Llamadas / WhatsApp)</label>
-      <input type="tel" id="adm-telefono" required>
-
-      <label>Cédula</label>
-      <input type="text" id="adm-cedula" required>
-
-      <label>Banco Pago Móvil</label>
-      <input type="text" id="adm-banco" placeholder="Ej: Banco de Venezuela">
-
-      <label>Teléfono Pago Móvil</label>
-      <input type="tel" id="adm-tel-pm">
-
-      <label>Cédula Pago Móvil</label>
-      <input type="text" id="adm-ced-pm">
-
-      <label>Tipo de Moto</label>
-      <input type="text" id="adm-moto" placeholder="Ej: Bera SBR 150">
-
-      <label>Placa de la Moto</label>
-      <input type="text" id="adm-placa" placeholder="Ej: AB123CD">
-
-      <label>Color de la Moto</label>
-      <input type="text" id="adm-color" placeholder="Ej: Negra">
-
-      <label>Link de Foto (imgbb)</label>
-      <input type="url" id="adm-foto" placeholder="https://i.ibb.co/...">
-
-      <label>Habilitado en sistema</label>
-      <select id="adm-activo">
-        <option value="SI">SI (Habilitado)</option>
-        <option value="NO">NO (Suspendido)</option>
-      </select>
-
-      <div class="btn-row" style="margin-top:14px;">
-        <button class="btn btn-green" onclick="guardarConductorAdmin()">Guardar Conductor</button>
-        <button class="btn btn-outline" onclick="limpiarFormConductor()">Limpiar</button>
+      <div id="lista-choferes">
+        <div class="empty">Cargando choferes...</div>
       </div>
-      <div id="msg-adm-cond" class="msg"></div>
-    </div>
+    </section>
 
-    <div class="panel">
-      <h3 style="margin:0 0 8px 0;">Conductores Registrados</h3>
-      <div id="lista-admin-conductores"></div>
-    </div>
-  </section>
+    <!-- VISTA CONDUCTOR -->
+    <section id="vista-conductor" class="hidden">
+      <div class="btn-row" style="margin-bottom:10px; justify-content:space-between; align-items:center;">
+        <span style="font-size:15px; font-weight:900;">Modo Conductor</span>
+        <button class="btn btn-ghost btn-sm" onclick="volverClientes()">← Volver a choferes</button>
+      </div>
 
-</div>
+      <div id="conductor-login" class="panel">
+        <div style="font-size:12px; color:var(--muted);">Se guarda en este teléfono para entrar sin repetir clave.</div>
+        <label>Código</label>
+        <input type="text" id="login-codigo" placeholder="Ej: MOTO01">
+        <label>Clave</label>
+        <input type="password" id="login-clave" placeholder="Tu clave">
+        <button class="btn btn-blue" style="margin-top:12px;" onclick="iniciarSesionConductor()">Entrar</button>
+        <div id="msg-login" class="msg"></div>
+      </div>
 
-<!-- MODAL FICHA DEL CONDUCTOR -->
-<div class="modal-backdrop" id="modal-conductor" onclick="cerrarModalSiFondo(event)">
-  <div class="modal" id="modal-contenido"></div>
-</div>
+      <div id="conductor-panel" class="panel hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div>
+            <div style="font-size:10.5px; color:var(--muted);">SESIÓN ACTIVA</div>
+            <div id="cond-nombre-sesion" style="font-size:16px; font-weight:900;"></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="cerrarSesionConductor()">Salir</button>
+        </div>
 
-<!-- MODAL CLAVE PROGRAMADOR -->
-<div class="modal-backdrop" id="modal-clave-admin" onclick="cerrarClaveSiFondo(event)">
-  <div class="modal">
-    <h3 style="margin:0 0 6px 0;">Modo Programador</h3>
-    <div style="font-size:13px; color:var(--muted);">Ingresa la clave de acceso para administrar la app.</div>
-    <label>Clave</label>
-    <input type="password" id="input-clave-admin" placeholder="••••••">
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-dark" onclick="validarClaveAdmin()">Ingresar</button>
-      <button class="btn btn-outline" onclick="cerrarModalClave()">Cancelar</button>
-    </div>
-    <div id="msg-clave-admin" class="msg"></div>
+        <label>Estado</label>
+        <div class="estado-grid">
+          <button type="button" class="est-btn" id="st-Disponible" onclick="seleccionarEstado('Disponible')">🟢 Libre</button>
+          <button type="button" class="est-btn" id="st-Ocupado" onclick="seleccionarEstado('Ocupado')">🟡 Ocupado</button>
+          <button type="button" class="est-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 Off</button>
+        </div>
+
+        <label>Ruta</label>
+        <select id="cond-ruta">
+          <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
+          <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
+        </select>
+
+        <label>Ubicación actual (reemplaza la anterior)</label>
+        <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma">
+
+        <button class="btn btn-green" style="margin-top:12px;" onclick="guardarEstadoConductor()">Guardar Ubicación y Estado</button>
+        <div id="msg-cond" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- VISTA PROGRAMADOR / ADMIN -->
+    <section id="vista-admin" class="hidden">
+      <div class="btn-row" style="margin-bottom:10px; justify-content:space-between; align-items:center;">
+        <span style="font-size:15px; font-weight:900;">Modo Programador</span>
+        <button class="btn btn-ghost btn-sm" onclick="salirAdmin()">Cerrar</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:800; font-size:14px;">Ajustes Generales</div>
+        <label>Teléfono del Administrador (para botón Llamar Admin)</label>
+        <input type="tel" id="cfg-tel-admin" placeholder="04141234567">
+        <label>Precio General de la Carrera</label>
+        <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
+        <label>Link del Logo (imgbb - opcional)</label>
+        <input type="url" id="cfg-logo" placeholder="https://i.ibb.co/...">
+        <button class="btn btn-blue" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Ajustes</button>
+        <div id="msg-cfg" class="msg"></div>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:800; font-size:14px;" id="titulo-form-cond">Agregar Chofer</div>
+        <label>Código</label>
+        <input type="text" id="adm-codigo" placeholder="MOTO01">
+        <label>Clave</label>
+        <input type="text" id="adm-clave" placeholder="1234">
+        <label>Nombre</label>
+        <input type="text" id="adm-nombre">
+        <label>Teléfono</label>
+        <input type="tel" id="adm-telefono">
+        <label>Cédula</label>
+        <input type="text" id="adm-cedula">
+        <label>Banco Pago Móvil</label>
+        <input type="text" id="adm-banco">
+        <label>Teléfono Pago Móvil</label>
+        <input type="tel" id="adm-tel-pm">
+        <label>Cédula Pago Móvil</label>
+        <input type="text" id="adm-ced-pm">
+        <label>Tipo de Moto</label>
+        <input type="text" id="adm-moto">
+        <label>Placa</label>
+        <input type="text" id="adm-placa">
+        <label>Color</label>
+        <input type="text" id="adm-color">
+        <label>Link Foto Chofer (imgbb)</label>
+        <input type="url" id="adm-foto" placeholder="https://i.ibb.co/...">
+        <label>Estado en sistema</label>
+        <select id="adm-activo">
+          <option value="SI">SI</option>
+          <option value="NO">NO</option>
+        </select>
+
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-green" onclick="guardarConductorAdmin()">Guardar</button>
+          <button class="btn btn-ghost" onclick="limpiarFormConductor()">Limpiar</button>
+        </div>
+        <div id="msg-adm-cond" class="msg"></div>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:800; font-size:14px;">Choferes Registrados</div>
+        <div id="lista-admin-conductores"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTÓN FLOTANTE (+) TIPO REFERENCIA -->
+  <div class="fab-menu" id="fab-menu">
+    <button class="fab-item-cond" onclick="abrirModoConductor()">🏍️ Modo Conductor</button>
+    <button class="fab-item-prog" onclick="abrirModalClaveAdmin()">programador</button>
   </div>
-</div>
+  <button class="fab-plus" id="fab-plus" onclick="toggleFabMenu()" aria-label="Menú">+</button>
+
+  <!-- MODAL FICHA DEL CHOFER -->
+  <div class="modal-bg" id="modal-chofer" onclick="if(event.target.id==='modal-chofer') cerrarModalChofer()">
+    <div class="modal-box" id="modal-chofer-body"></div>
+  </div>
+
+  <!-- MODAL CLAVE PROGRAMADOR -->
+  <div class="modal-bg" id="modal-clave" onclick="if(event.target.id==='modal-clave') cerrarModalClave()">
+    <div class="modal-box">
+      <div style="font-size:15px; font-weight:900;">Acceso Programador</div>
+      <label>Clave</label>
+      <input type="password" id="input-clave-admin" placeholder="••••••">
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-blue" onclick="validarClaveAdmin()">Entrar</button>
+        <button class="btn btn-ghost" onclick="cerrarModalClave()">Cancelar</button>
+      </div>
+      <div id="msg-clave" class="msg"></div>
+    </div>
+  </div>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbzDUzyCzaap15ns5O75RGq0bOWCN_QxQU1CHU5LV8VDkzrrZTbU-zB0PRAqG4ejV91a/exec";
-  const STORAGE_COND = "taxi_piritu_turen_conductor";
-  const STORAGE_ADMIN = "taxi_piritu_turen_admin_key";
+  const LOGO_IMGBB_URL = ""; // Opcional: pega aquí el link directo de imgbb si quieres fijarlo desde código
 
-  let estadoApp = {
-    config: { telefonoAdmin: "", precioCarrera: "Consultar tarifa", notaTarifa: "Ruta Píritu ↔ Turén" },
+  const STORAGE_COND = "ruta_azul_conductor_v1";
+  const STORAGE_ADMIN = "ruta_azul_admin_v1";
+  const STORAGE_USO = "ruta_azul_uso_choferes_v1";
+
+  const FRASES_DINAMICAS = [
+    "Tu ruta segura Píritu ↔ Turén",
+    "Choferes verificados en cada tramo",
+    "Rápido, directo y sin complicaciones",
+    "Conectando Píritu y Turén cada día"
+  ];
+
+  let appData = {
+    config: { telefonoAdmin: "", precioCarrera: "Consultar tarifa", logoUrl: "" },
     conductores: []
   };
-  let conductorActual = null;
-  let estadoSeleccionadoCond = "Disponible";
-  let listaAdminCache = [];
+  let filtroActual = "TODOS";
+  let conductorSesion = null;
+  let estadoCondElegido = "Disponible";
+  let adminListaCache = [];
+  let fraseIdx = 0;
 
   document.addEventListener("DOMContentLoaded", () => {
+    iniciarMensajesDinamicos();
     cargarEstadoPublico();
-    cargarSesionGuardadaConductor();
+    cargarSesionConductor();
   });
 
-  function irVista(vista) {
-    ["clientes", "conductor", "admin"].forEach(v => {
-      document.getElementById("vista-" + v).classList.toggle("hidden", v !== vista);
-      const nav = document.getElementById("nav-" + v);
-      if (nav) nav.classList.toggle("active", v === vista);
-    });
-    if (vista === "clientes") cargarEstadoPublico();
+  function iniciarMensajesDinamicos() {
+    const el = document.getElementById("mensaje-dinamico");
+    setInterval(() => {
+      fraseIdx = (fraseIdx + 1) % FRASES_DINAMICAS.length;
+      el.style.opacity = "0";
+      setTimeout(() => {
+        el.textContent = FRASES_DINAMICAS[fraseIdx];
+        el.style.opacity = "1";
+      }, 200);
+    }, 3600);
   }
 
-  function mostrarMsg(id, texto, esError = false) {
+  function toggleFabMenu() {
+    document.getElementById("fab-menu").classList.toggle("open");
+  }
+  function cerrarFabMenu() {
+    document.getElementById("fab-menu").classList.remove("open");
+  }
+
+  function volverClientes() {
+    cerrarFabMenu();
+    document.getElementById("vista-conductor").classList.add("hidden");
+    document.getElementById("vista-admin").classList.add("hidden");
+    document.getElementById("vista-clientes").classList.remove("hidden");
+    cargarEstadoPublico();
+  }
+
+  function abrirModoConductor() {
+    cerrarFabMenu();
+    document.getElementById("vista-clientes").classList.add("hidden");
+    document.getElementById("vista-admin").classList.add("hidden");
+    document.getElementById("vista-conductor").classList.remove("hidden");
+  }
+
+  function mostrarMsg(id, txt, err = false) {
     const el = document.getElementById(id);
-    el.textContent = texto;
-    el.className = "msg " + (esError ? "err" : "ok");
+    el.textContent = txt;
+    el.className = "msg " + (err ? "err" : "ok");
   }
 
-  function limpiarTelefono(tel) {
-    return String(tel || "").replace(/[^\d]/g, "");
+  function limpiarTel(t) { return String(t || "").replace(/[^\d]/g, ""); }
+  function telVE(t) {
+    const l = limpiarTel(t);
+    if (!l) return "";
+    if (l.startsWith("58")) return l;
+    if (l.startsWith("0")) return "58" + l.slice(1);
+    return "58" + l;
   }
 
-  function formatoInternacionalVE(tel) {
-    const limpio = limpiarTelefono(tel);
-    if (!limpio) return "";
-    if (limpio.startsWith("58")) return limpio;
-    if (limpio.startsWith("0")) return "58" + limpio.slice(1);
-    return "58" + limpio;
+  /* Registro de uso por cliente en el teléfono para botón "Recurrente" */
+  function registrarUsoLocalChofer(codigo) {
+    if (!codigo) return;
+    let mapa = {};
+    try { mapa = JSON.parse(localStorage.getItem(STORAGE_USO) || "{}"); } catch (e) {}
+    mapa[codigo] = (mapa[codigo] || 0) + 1;
+    localStorage.setItem(STORAGE_USO, JSON.stringify(mapa));
+  }
+
+  function obtenerCodigoMasUsado() {
+    let mapa = {};
+    try { mapa = JSON.parse(localStorage.getItem(STORAGE_USO) || "{}"); } catch (e) {}
+    let mejorCod = null;
+    let maxVeces = 0;
+    for (const [cod, veces] of Object.entries(mapa)) {
+      if (veces > maxVeces) {
+        maxVeces = veces;
+        mejorCod = cod;
+      }
+    }
+    return mejorCod;
+  }
+
+  function aplicarFiltro(f) {
+    filtroActual = f;
+    ["TODOS", "TUREN", "PIRITU", "RECURRENTE"].forEach(id => {
+      const btn = document.getElementById("flt-" + id);
+      if (btn) btn.classList.toggle("active", id === f);
+    });
+    renderizarChoferes();
   }
 
   async function cargarEstadoPublico() {
     try {
-      const res = await fetch(`${API_URL}?action=estadoPublico`);
-      const data = await res.json();
-      if (data.status === "ok") {
-        estadoApp.config = data.config || estadoApp.config;
-        estadoApp.conductores = data.conductores || [];
-        renderizarClientes();
+      const r = await fetch(`${API_URL}?action=estadoPublico`);
+      const d = await r.json();
+      if (d.status === "ok") {
+        appData.config = d.config || appData.config;
+        appData.conductores = d.conductores || [];
+        renderizarChoferes();
       }
     } catch (e) {
-      document.getElementById("lista-conductores").innerHTML =
-        `<div class="empty">Error al cargar datos. Revisa la conexión o la URL del script.</div>`;
+      document.getElementById("lista-choferes").innerHTML =
+        `<div class="empty">Sin conexión para actualizar la lista.</div>`;
     }
   }
 
-  function renderizarClientes() {
-    const cfg = estadoApp.config;
-    document.getElementById("lbl-precio-carrera").textContent = cfg.precioCarrera || "Consultar tarifa";
-    document.getElementById("lbl-nota-tarifa").textContent = cfg.notaTarifa || "Ruta Píritu ↔ Turén";
+  function renderizarChoferes() {
+    const cfg = appData.config || {};
+    document.getElementById("lbl-precio").textContent = cfg.precioCarrera || "Consultar tarifa";
 
-    const telAdminLimpio = limpiarTelefono(cfg.telefonoAdmin);
-    const waAdmin = formatoInternacionalVE(cfg.telefonoAdmin);
-    const boxCentral = document.getElementById("box-central");
+    const logoSrc = LOGO_IMGBB_URL || cfg.logoUrl || "icon.svg";
+    document.getElementById("app-logo").src = logoSrc;
 
-    if (telAdminLimpio) {
-      boxCentral.classList.remove("hidden");
-      document.getElementById("btn-llamar-admin").href = `tel:${telAdminLimpio}`;
-      document.getElementById("btn-wa-admin").href = `https://wa.me/${waAdmin}?text=${encodeURIComponent("Hola, necesito ayuda para ubicar un moto taxi en la ruta Píritu ↔ Turén.")}`;
-    } else {
-      boxCentral.classList.add("hidden");
+    const telAdmin = limpiarTel(cfg.telefonoAdmin);
+    const linkAdmin = document.getElementById("rail-llamar-admin");
+    linkAdmin.href = telAdmin ? `tel:${telAdmin}` : "#";
+
+    const titulos = {
+      TODOS: "Choferes en ruta",
+      TUREN: "Choferes en Turén",
+      PIRITU: "Choferes en Píritu",
+      RECURRENTE: "Tu chofer recurrente"
+    };
+    document.getElementById("titulo-lista-choferes").textContent = titulos[filtroActual] || "Choferes";
+
+    let items = appData.conductores.map((c, idx) => ({ c, idx }));
+
+    if (filtroActual === "TUREN") {
+      items = items.filter(({ c }) => {
+        const texto = `${c.ruta || ""} ${c.ubicacion || ""}`.toLowerCase();
+        return texto.includes("turén") || texto.includes("turen");
+      });
+    } else if (filtroActual === "PIRITU") {
+      items = items.filter(({ c }) => {
+        const texto = `${c.ruta || ""} ${c.ubicacion || ""}`.toLowerCase();
+        return texto.includes("píritu") || texto.includes("piritu");
+      });
+    } else if (filtroActual === "RECURRENTE") {
+      const favorito = obtenerCodigoMasUsado();
+      if (!favorito) {
+        document.getElementById("contador-choferes").textContent = "0";
+        document.getElementById("lista-choferes").innerHTML =
+          `<div class="empty">Aún no tienes un chofer recurrente.<br>Cuando pidas un servicio, aquí aparecerá el que más uses.</div>`;
+        return;
+      }
+      items = items.filter(({ c }) => c.codigo === favorito);
     }
 
-    const cont = document.getElementById("lista-conductores");
-    if (!estadoApp.conductores.length) {
-      cont.innerHTML = `<div class="empty">No hay conductores disponibles u ocupados en este momento.<br>Usa el botón de Central si necesitas apoyo.</div>`;
+    document.getElementById("contador-choferes").textContent = String(items.length);
+
+    if (!items.length) {
+      document.getElementById("lista-choferes").innerHTML =
+        `<div class="empty">No hay choferes en este filtro ahora mismo.</div>`;
       return;
     }
 
-    cont.innerHTML = estadoApp.conductores.map((c, idx) => {
-      const pillClass = c.estado === "Disponible" ? "pill-disp" : "pill-ocup";
-      const foto = c.linkFoto || "https://via.placeholder.com/100?text=TAXI";
+    document.getElementById("lista-choferes").innerHTML = items.map(({ c, idx }) => {
+      const stCls = c.estado === "Disponible" ? "st-disp" : "st-ocup";
+      const foto = c.linkFoto || "icon.svg";
       return `
-        <div class="driver-card" onclick="abrirFichaConductor(${idx})">
-          <img class="avatar" src="${foto}" alt="${c.nombre}" onerror="this.src='https://via.placeholder.com/100?text=TAXI'">
-          <div class="driver-main">
-            <div class="driver-name">${c.nombre}</div>
-            <div class="driver-meta">${c.ruta} • ${c.ubicacion || "En ruta"}</div>
+        <div class="driver-row" onclick="abrirFichaChofer(${idx})">
+          <img class="driver-pic" src="${foto}" alt="${c.nombre}" onerror="this.src='icon.svg'">
+          <div class="driver-txt">
+            <div class="driver-title">${c.nombre}</div>
+            <div class="driver-sub">${c.ruta} • ${c.ubicacion || "En vía"}</div>
           </div>
-          <span class="pill ${pillClass}">${c.estado}</span>
+          <span class="badge-st ${stCls}">${c.estado}</span>
         </div>
       `;
     }).join("");
   }
 
-  function abrirFichaConductor(idx) {
-    const c = estadoApp.conductores[idx];
+  function abrirFichaChofer(idx) {
+    const c = appData.conductores[idx];
     if (!c) return;
-    const foto = c.linkFoto || "https://via.placeholder.com/300x200?text=TAXI";
-    const telLimpio = limpiarTelefono(c.telefono);
-    const precio = estadoApp.config.precioCarrera || "Consultar tarifa";
+    const foto = c.linkFoto || "icon.svg";
+    const tel = limpiarTel(c.telefono);
+    const precio = appData.config.precioCarrera || "Consultar tarifa";
 
-    document.getElementById("modal-contenido").innerHTML = `
+    document.getElementById("modal-chofer-body").innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span class="pill ${c.estado === "Disponible" ? "pill-disp" : "pill-ocup"}">${c.estado}</span>
-        <button class="btn btn-outline btn-sm" onclick="cerrarModalConductor()">✕ Cerrar</button>
+        <span class="badge-st ${c.estado === "Disponible" ? "st-disp" : "st-ocup"}">${c.estado}</span>
+        <button class="btn btn-ghost btn-sm" onclick="cerrarModalChofer()">✕</button>
       </div>
-      <img class="modal-foto" src="${foto}" alt="${c.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=TAXI'">
-      <h2 style="margin:12px 0 2px 0;">${c.nombre}</h2>
-      <div style="font-size:13px; color:var(--muted);">
-        Ruta: <strong>${c.ruta}</strong> • Ubicación: <strong>${c.ubicacion || "No especificada"}</strong>
+      <img class="modal-img" src="${foto}" alt="${c.nombre}" onerror="this.src='icon.svg'">
+      <h2 style="margin:10px 0 2px 0; font-size:19px;">${c.nombre}</h2>
+      <div style="font-size:12.5px; color:var(--muted);">${c.ruta} • <strong>${c.ubicacion || "Sin ubicación anotada"}</strong></div>
+
+      <div class="grid-2">
+        <div class="mini-box"><span class="mini-lbl">Teléfono</span><strong>${c.telefono || "-"}</strong></div>
+        <div class="mini-box"><span class="mini-lbl">Precio Carrera</span><strong>${precio}</strong></div>
+        <div class="mini-box"><span class="mini-lbl">Tipo de Moto</span><strong>${c.tipoMoto || "-"}</strong></div>
+        <div class="mini-box"><span class="mini-lbl">Color / Placa</span><strong>${c.color || "-"} / ${c.placa || "-"}</strong></div>
       </div>
 
-      <div class="dato-grid">
-        <div class="dato-box"><span class="dato-label">Teléfono</span><strong>${c.telefono || "-"}</strong></div>
-        <div class="dato-box"><span class="dato-label">Precio Carrera</span><strong>${precio}</strong></div>
-        <div class="dato-box"><span class="dato-label">Tipo de Moto</span><strong>${c.tipoMoto || "-"}</strong></div>
-        <div class="dato-box"><span class="dato-label">Color / Placa</span><strong>${c.color || "-"} / ${c.placa || "-"}</strong></div>
-      </div>
-
-      <div class="pm-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <strong>💳 Datos de Pago Móvil</strong>
-          <button class="btn btn-outline btn-sm" onclick="copiarPagoMovil('${c.bancoPagoMovil}','${c.telefonoPagoMovil}','${c.cedulaPagoMovil}')">Copiar</button>
+      <div class="pm-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <strong>💳 Pago Móvil</strong>
+          <button class="btn btn-ghost btn-sm" onclick="copiarPM('${c.bancoPagoMovil}','${c.telefonoPagoMovil}','${c.cedulaPagoMovil}')">Copiar</button>
         </div>
         <div>Banco: <strong>${c.bancoPagoMovil || "-"}</strong></div>
         <div>Teléfono: <strong>${c.telefonoPagoMovil || "-"}</strong></div>
         <div>Cédula: <strong>${c.cedulaPagoMovil || "-"}</strong></div>
       </div>
 
-      <div style="background:#f9fafb; border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:12px;">
-        <div style="font-size:12px; font-weight:700; margin-bottom:6px;">Para solicitar por WhatsApp (se registra tu IP por seguridad):</div>
+      <div style="background:#181c26; border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px;">
+        <div style="font-size:11px; font-weight:700; color:var(--cyan);">Pedir por WhatsApp (registra tu IP):</div>
         <input type="text" id="cli-nombre" placeholder="Tu nombre">
         <input type="tel" id="cli-telefono" placeholder="Tu teléfono">
-        <input type="text" id="cli-origen" placeholder="¿Dónde estás? (Ej: Mata de Palma / Centro)">
+        <input type="text" id="cli-origen" placeholder="¿Dónde estás? (Ej: Mata de Palma)">
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-green" onclick="solicitarPorWhatsApp(${idx})">💬 WhatsApp</button>
-        <a href="tel:${telLimpio}" class="btn btn-blue">📞 Llamar</a>
+        <button class="btn btn-green" onclick="pedirWhatsApp(${idx})">💬 WhatsApp</button>
+        <a href="tel:${tel}" class="btn btn-blue" onclick="registrarUsoLocalChofer('${c.codigo}')">📞 Llamar</a>
       </div>
       <div id="msg-ficha" class="msg"></div>
     `;
-    document.getElementById("modal-conductor").classList.add("open");
+    document.getElementById("modal-chofer").classList.add("open");
   }
 
-  function cerrarModalConductor() {
-    document.getElementById("modal-conductor").classList.remove("open");
-  }
-  function cerrarModalSiFondo(e) {
-    if (e.target.id === "modal-conductor") cerrarModalConductor();
+  function cerrarModalChofer() {
+    document.getElementById("modal-chofer").classList.remove("open");
   }
 
-  function copiarPagoMovil(banco, tel, ced) {
-    const texto = `Pago Móvil:\nBanco: ${banco}\nTeléfono: ${tel}\nCédula: ${ced}`;
-    navigator.clipboard.writeText(texto).then(() => {
-      mostrarMsg("msg-ficha", "Datos de Pago Móvil copiados.");
-    }).catch(() => {
-      mostrarMsg("msg-ficha", texto);
-    });
+  function copiarPM(banco, tel, ced) {
+    const txt = `Pago Móvil\nBanco: ${banco}\nTeléfono: ${tel}\nCédula: ${ced}`;
+    navigator.clipboard.writeText(txt).then(() => mostrarMsg("msg-ficha", "Copiado al portapapeles."));
   }
 
-  async function obtenerIPCliente() {
+  async function obtenerIP() {
     try {
       const r = await fetch("https://api.ipify.org?format=json");
       const j = await r.json();
@@ -494,26 +839,27 @@
     }
   }
 
-  async function solicitarPorWhatsApp(idx) {
-    const c = estadoApp.conductores[idx];
+  async function pedirWhatsApp(idx) {
+    const c = appData.conductores[idx];
     const nombreCli = document.getElementById("cli-nombre").value.trim();
     const telCli = document.getElementById("cli-telefono").value.trim();
     const origenCli = document.getElementById("cli-origen").value.trim();
 
     if (!nombreCli || !telCli) {
-      mostrarMsg("msg-ficha", "Escribe tu nombre y teléfono antes de pedir por WhatsApp.", true);
+      mostrarMsg("msg-ficha", "Ingresa tu nombre y teléfono.", true);
       return;
     }
 
-    mostrarMsg("msg-ficha", "Registrando solicitud y verificando historial...");
-    const ip = await obtenerIPCliente();
+    registrarUsoLocalChofer(c.codigo);
+    mostrarMsg("msg-ficha", "Registrando IP y abriendo WhatsApp...");
+    const ip = await obtenerIP();
 
     try {
       await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
           tipoRegistro: "registrarServicioCliente",
-          ip: ip,
+          ip,
           nombreCliente: nombreCli,
           telefonoCliente: telCli,
           origenCliente: origenCli || c.ruta,
@@ -524,21 +870,21 @@
       });
     } catch (e) {}
 
-    const waDest = formatoInternacionalVE(c.telefono);
-    const precio = estadoApp.config.precioCarrera || "Consultar tarifa";
-    const texto = `Hola ${c.nombre}, soy ${nombreCli} (Tel: ${telCli}). Solicito servicio de moto taxi (${c.ruta}). Mi ubicación/origen: ${origenCli || "Por indicar"}. Tarifa referencial: ${precio}.`;
-    window.open(`https://wa.me/${waDest}?text=${encodeURIComponent(texto)}`, "_blank");
+    const wa = telVE(c.telefono);
+    const precio = appData.config.precioCarrera || "Consultar tarifa";
+    const msg = `Hola ${c.nombre}, soy ${nombreCli} (Tel: ${telCli}). Pido moto taxi en RUTA AZUL (${c.ruta}). Ubicación: ${origenCli || "Por indicar"}. Tarifa: ${precio}.`;
+    window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
-  /* --- MODO CONDUCTOR (localStorage) --- */
-  function cargarSesionGuardadaConductor() {
+  /* --- CONDUCTOR --- */
+  function cargarSesionConductor() {
     const raw = localStorage.getItem(STORAGE_COND);
     if (!raw) return;
     try {
-      const saved = JSON.parse(raw);
-      if (saved && saved.codigo && saved.clave) {
-        conductorActual = saved;
-        mostrarPanelConductor(saved);
+      const s = JSON.parse(raw);
+      if (s && s.codigo && s.clave) {
+        conductorSesion = s;
+        pintarPanelConductor(s);
       }
     } catch (e) {}
   }
@@ -546,30 +892,28 @@
   async function iniciarSesionConductor() {
     const codigo = document.getElementById("login-codigo").value.trim();
     const clave = document.getElementById("login-clave").value.trim();
-    if (!codigo || !clave) {
-      mostrarMsg("msg-login", "Ingresa tu código y clave.", true);
-      return;
-    }
+    if (!codigo || !clave) return mostrarMsg("msg-login", "Completa código y clave.", true);
+
     try {
-      const res = await fetch(API_URL, {
+      const r = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({ tipoRegistro: "loginConductor", codigo, clave })
       });
-      const data = await res.json();
-      if (data.status === "ok") {
-        const sesion = { ...data.conductor, clave };
-        localStorage.setItem(STORAGE_COND, JSON.stringify(sesion));
-        conductorActual = sesion;
-        mostrarPanelConductor(sesion);
+      const d = await r.json();
+      if (d.status === "ok") {
+        const ses = { ...d.conductor, clave };
+        localStorage.setItem(STORAGE_COND, JSON.stringify(ses));
+        conductorSesion = ses;
+        pintarPanelConductor(ses);
       } else {
-        mostrarMsg("msg-login", data.message || "Error al iniciar sesión", true);
+        mostrarMsg("msg-login", d.message || "Datos incorrectos", true);
       }
     } catch (e) {
       mostrarMsg("msg-login", "Error de conexión", true);
     }
   }
 
-  function mostrarPanelConductor(c) {
+  function pintarPanelConductor(c) {
     document.getElementById("conductor-login").classList.add("hidden");
     document.getElementById("conductor-panel").classList.remove("hidden");
     document.getElementById("cond-nombre-sesion").textContent = `${c.nombre} (${c.codigo})`;
@@ -580,159 +924,144 @@
 
   function cerrarSesionConductor() {
     localStorage.removeItem(STORAGE_COND);
-    conductorActual = null;
+    conductorSesion = null;
     document.getElementById("conductor-panel").classList.add("hidden");
     document.getElementById("conductor-login").classList.remove("hidden");
   }
 
-  function seleccionarEstado(est) {
-    estadoSeleccionadoCond = est;
-    ["Disponible", "Ocupado", "Fuera de servicio"].forEach(nombre => {
-      const btn = document.getElementById("st-" + nombre);
-      btn.className = "estado-btn";
-      if (nombre === est) {
-        if (est === "Disponible") btn.classList.add("sel-disp");
-        if (est === "Ocupado") btn.classList.add("sel-ocup");
-        if (est === "Fuera de servicio") btn.classList.add("sel-off");
+  function seleccionarEstado(st) {
+    estadoCondElegido = st;
+    ["Disponible", "Ocupado", "Fuera de servicio"].forEach(n => {
+      const b = document.getElementById("st-" + n);
+      b.className = "est-btn";
+      if (n === st) {
+        if (st === "Disponible") b.classList.add("on-disp");
+        if (st === "Ocupado") b.classList.add("on-ocup");
+        if (st === "Fuera de servicio") b.classList.add("on-off");
       }
     });
   }
 
   async function guardarEstadoConductor() {
-    if (!conductorActual) return;
+    if (!conductorSesion) return;
     const ruta = document.getElementById("cond-ruta").value;
     const ubicacion = document.getElementById("cond-ubicacion").value.trim();
 
-    mostrarMsg("msg-cond", "Guardando...");
     try {
-      const res = await fetch(API_URL, {
+      const r = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
           tipoRegistro: "actualizarEstadoConductor",
-          codigo: conductorActual.codigo,
-          clave: conductorActual.clave,
-          estado: estadoSeleccionadoCond,
-          ruta: ruta,
-          ubicacion: ubicacion
+          codigo: conductorSesion.codigo,
+          clave: conductorSesion.clave,
+          estado: estadoCondElegido,
+          ruta,
+          ubicacion
         })
       });
-      const data = await res.json();
-      if (data.status === "ok") {
-        conductorActual.estado = data.estado;
-        conductorActual.ruta = data.ruta;
-        conductorActual.ubicacion = data.ubicacion;
-        localStorage.setItem(STORAGE_COND, JSON.stringify(conductorActual));
-        mostrarMsg("msg-cond", "Actualizado en tiempo real.");
+      const d = await r.json();
+      if (d.status === "ok") {
+        conductorSesion.estado = d.estado;
+        conductorSesion.ruta = d.ruta;
+        conductorSesion.ubicacion = d.ubicacion;
+        localStorage.setItem(STORAGE_COND, JSON.stringify(conductorSesion));
+        mostrarMsg("msg-cond", "Guardado.");
       } else {
-        mostrarMsg("msg-cond", data.message || "Error al guardar", true);
+        mostrarMsg("msg-cond", d.message || "Error", true);
       }
     } catch (e) {
       mostrarMsg("msg-cond", "Error de conexión", true);
     }
   }
 
-  /* --- MODO PROGRAMADOR / ADMIN (584627) --- */
-  function abrirModalAdmin() {
-    const savedKey = sessionStorage.getItem(STORAGE_ADMIN);
-    if (savedKey) {
-      cargarPanelAdmin(savedKey);
-      return;
-    }
+  /* --- PROGRAMADOR (584627) --- */
+  function abrirModalClaveAdmin() {
+    cerrarFabMenu();
+    const k = sessionStorage.getItem(STORAGE_ADMIN);
+    if (k) return cargarAdmin(k);
     document.getElementById("input-clave-admin").value = "";
-    document.getElementById("msg-clave-admin").style.display = "none";
-    document.getElementById("modal-clave-admin").classList.add("open");
+    document.getElementById("msg-clave").style.display = "none";
+    document.getElementById("modal-clave").classList.add("open");
   }
 
   function cerrarModalClave() {
-    document.getElementById("modal-clave-admin").classList.remove("open");
-  }
-  function cerrarClaveSiFondo(e) {
-    if (e.target.id === "modal-clave-admin") cerrarModalClave();
+    document.getElementById("modal-clave").classList.remove("open");
   }
 
   async function validarClaveAdmin() {
-    const clave = document.getElementById("input-clave-admin").value.trim();
-    if (!clave) {
-      mostrarMsg("msg-clave-admin", "Escribe la clave.", true);
-      return;
-    }
-    await cargarPanelAdmin(clave, true);
+    const k = document.getElementById("input-clave-admin").value.trim();
+    if (!k) return mostrarMsg("msg-clave", "Escribe la clave.", true);
+    await cargarAdmin(k, true);
   }
 
-  async function cargarPanelAdmin(clave, desdeModal = false) {
+  async function cargarAdmin(claveProgramador, desdeModal = false) {
     try {
-      const res = await fetch(API_URL, {
+      const r = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({ tipoRegistro: "adminObtenerTodo", claveProgramador: clave })
+        body: JSON.stringify({ tipoRegistro: "adminObtenerTodo", claveProgramador })
       });
-      const data = await res.json();
-      if (data.status === "ok") {
-        sessionStorage.setItem(STORAGE_ADMIN, clave);
+      const d = await r.json();
+      if (d.status === "ok") {
+        sessionStorage.setItem(STORAGE_ADMIN, claveProgramador);
         cerrarModalClave();
-
-        document.getElementById("cfg-tel-admin").value = data.config.telefonoAdmin || "";
-        document.getElementById("cfg-precio").value = data.config.precioCarrera || "";
-        document.getElementById("cfg-nota").value = data.config.notaTarifa || "";
-
-        listaAdminCache = data.conductores || [];
-        renderizarAdminConductores();
-        irVista("admin");
-      } else {
-        if (desdeModal) mostrarMsg("msg-clave-admin", data.message || "Clave incorrecta", true);
-        else {
-          sessionStorage.removeItem(STORAGE_ADMIN);
-          abrirModalAdmin();
-        }
+        document.getElementById("cfg-tel-admin").value = d.config.telefonoAdmin || "";
+        document.getElementById("cfg-precio").value = d.config.precioCarrera || "";
+        document.getElementById("cfg-logo").value = d.config.logoUrl || "";
+        adminListaCache = d.conductores || [];
+        renderAdminLista();
+        document.getElementById("vista-clientes").classList.add("hidden");
+        document.getElementById("vista-conductor").classList.add("hidden");
+        document.getElementById("vista-admin").classList.remove("hidden");
+      } else if (desdeModal) {
+        mostrarMsg("msg-clave", d.message || "Clave incorrecta", true);
       }
     } catch (e) {
-      if (desdeModal) mostrarMsg("msg-clave-admin", "Error de conexión", true);
+      if (desdeModal) mostrarMsg("msg-clave", "Error de conexión", true);
     }
   }
 
   function salirAdmin() {
     sessionStorage.removeItem(STORAGE_ADMIN);
-    irVista("clientes");
+    volverClientes();
   }
 
   async function guardarConfigGeneral() {
     const claveProgramador = sessionStorage.getItem(STORAGE_ADMIN);
     const telefonoAdmin = document.getElementById("cfg-tel-admin").value.trim();
     const precioCarrera = document.getElementById("cfg-precio").value.trim();
-    const notaTarifa = document.getElementById("cfg-nota").value.trim();
+    const logoUrl = document.getElementById("cfg-logo").value.trim();
 
     try {
-      const res = await fetch(API_URL, {
+      const r = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
           tipoRegistro: "guardarConfig",
           claveProgramador,
           telefonoAdmin,
           precioCarrera,
-          notaTarifa
+          notaTarifa: appData.config.notaTarifa || "Ruta Píritu ↔ Turén",
+          logoUrl
         })
       });
-      const data = await res.json();
-      if (data.status === "ok") {
-        mostrarMsg("msg-cfg", "Configuración guardada en Google Sheets.");
-      } else {
-        mostrarMsg("msg-cfg", data.message || "Error", true);
-      }
+      const d = await r.json();
+      if (d.status === "ok") mostrarMsg("msg-cfg", "Ajustes guardados.");
+      else mostrarMsg("msg-cfg", d.message || "Error", true);
     } catch (e) {
       mostrarMsg("msg-cfg", "Error de conexión", true);
     }
   }
 
   function limpiarFormConductor() {
-    document.getElementById("titulo-form-cond").textContent = "Agregar Conductor";
+    document.getElementById("titulo-form-cond").textContent = "Agregar Chofer";
     ["adm-codigo","adm-clave","adm-nombre","adm-telefono","adm-cedula","adm-banco","adm-tel-pm","adm-ced-pm","adm-moto","adm-placa","adm-color","adm-foto"]
       .forEach(id => document.getElementById(id).value = "");
     document.getElementById("adm-activo").value = "SI";
   }
 
   function editarConductorAdmin(idx) {
-    const c = listaAdminCache[idx];
+    const c = adminListaCache[idx];
     if (!c) return;
-    document.getElementById("titulo-form-cond").textContent = "Editar Conductor: " + c.nombre;
+    document.getElementById("titulo-form-cond").textContent = "Editar: " + c.nombre;
     document.getElementById("adm-codigo").value = c.codigo;
     document.getElementById("adm-clave").value = c.clave;
     document.getElementById("adm-nombre").value = c.nombre;
@@ -768,43 +1097,37 @@
       linkFoto: document.getElementById("adm-foto").value.trim(),
       activoSistema: document.getElementById("adm-activo").value
     };
-
     if (!payload.codigo || !payload.clave || !payload.nombre || !payload.telefono) {
-      mostrarMsg("msg-adm-cond", "Completa al menos Código, Clave, Nombre y Teléfono.", true);
-      return;
+      return mostrarMsg("msg-adm-cond", "Completa Código, Clave, Nombre y Teléfono.", true);
     }
-
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.status === "ok") {
-        mostrarMsg("msg-adm-cond", data.message);
+      const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+      const d = await r.json();
+      if (d.status === "ok") {
+        mostrarMsg("msg-adm-cond", d.message);
         limpiarFormConductor();
-        cargarPanelAdmin(claveProgramador);
+        cargarAdmin(claveProgramador);
       } else {
-        mostrarMsg("msg-adm-cond", data.message || "Error al guardar", true);
+        mostrarMsg("msg-adm-cond", d.message || "Error", true);
       }
     } catch (e) {
       mostrarMsg("msg-adm-cond", "Error de conexión", true);
     }
   }
 
-  function renderizarAdminConductores() {
+  function renderAdminLista() {
     const cont = document.getElementById("lista-admin-conductores");
-    if (!listaAdminCache.length) {
-      cont.innerHTML = `<div class="empty">Aún no hay conductores registrados.</div>`;
+    if (!adminListaCache.length) {
+      cont.innerHTML = `<div class="empty">Sin choferes registrados.</div>`;
       return;
     }
-    cont.innerHTML = listaAdminCache.map((c, idx) => `
-      <div class="admin-item">
+    cont.innerHTML = adminListaCache.map((c, i) => `
+      <div class="admin-row">
         <div>
           <strong>${c.nombre}</strong> (${c.codigo}) • <span style="color:var(--muted);">${c.estado}</span><br>
-          <span style="font-size:12px; color:var(--muted);">Moto: ${c.tipoMoto} (${c.placa}) • Habilitado: ${c.activoSistema}</span>
+          <span style="font-size:11px; color:var(--muted);">${c.tipoMoto} • ${c.placa} • Activo: ${c.activoSistema}</span>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="editarConductorAdmin(${idx})">Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="editarConductorAdmin(${i})">Editar</button>
       </div>
     `).join("");
   }
