@@ -513,7 +513,7 @@
       <section id="vista-conductor" class="hidden">
         <div class="hero-header" style="min-height:auto; margin-bottom:10px;">
           <div class="hero-taxi" style="font-size:22px;">Modo Conductor</div>
-          <div class="dynamic-phrase" style="color:var(--cyan); margin-top:4px;">Actualiza tu ubicación y ruta</div>
+          <div class="dynamic-phrase" style="color:var(--cyan); margin-top:4px;">Selecciona dónde estás o anota tu dirección</div>
         </div>
 
         <div class="btn-row" style="margin-bottom:10px;">
@@ -523,7 +523,7 @@
         <div id="conductor-login" class="panel">
           <div style="font-size:12px; color:var(--muted);">Quedará guardado en este teléfono.</div>
           <label>Código</label>
-          <input type="text" id="login-codigo" placeholder="Ej: MOTO01">
+          <input type="text" id="login-codigo" placeholder="Ej: G-01">
           <label>Clave</label>
           <input type="password" id="login-clave" placeholder="Tu clave">
           <button class="btn btn-blue" style="margin-top:12px;" onclick="iniciarSesionConductor()">Entrar</button>
@@ -546,14 +546,15 @@
             <button type="button" class="est-btn" id="st-Fuera de servicio" onclick="seleccionarEstado('Fuera de servicio')">🔴 Off</button>
           </div>
 
-          <label>Ruta</label>
-          <select id="cond-ruta">
-            <option value="Píritu ➔ Turén">Píritu ➔ Turén</option>
-            <option value="Turén ➔ Píritu">Turén ➔ Píritu</option>
+          <label>Dónde estás ahora (opcional)</label>
+          <select id="cond-zona" onchange="alCambiarZona()">
+            <option value="Píritu">Píritu</option>
+            <option value="Turén">Turén</option>
+            <option value="Otro">Otro (anotar dirección)</option>
           </select>
 
-          <label>Ubicación actual (reemplaza la anterior)</label>
-          <input type="text" id="cond-ubicacion" placeholder="Ej: Caserío Mata de Palma">
+          <label id="lbl-ubicacion">Dirección / Ubicación actual (reemplaza la anterior)</label>
+          <input type="text" id="cond-ubicacion" placeholder="Ej: El Jobal, Mata de Palma, Centro...">
 
           <button class="btn btn-green" style="margin-top:12px;" onclick="guardarEstadoConductor()">Guardar Estado y Ubicación</button>
           <div id="msg-cond" class="msg"></div>
@@ -575,7 +576,7 @@
           <label>Teléfono del Administrador</label>
           <input type="tel" id="cfg-tel-admin" placeholder="04141234567">
           <label>Precio General de la Carrera</label>
-          <input type="text" id="cfg-precio" placeholder="Ej: $3 o 150 Bs">
+          <input type="text" id="cfg-precio" placeholder="Ej: $3 o 2000 Bs">
           <label>Link del Logo (imgbb)</label>
           <input type="url" id="cfg-logo" placeholder="https://i.ibb.co/...">
           <button class="btn btn-blue" style="margin-top:12px;" onclick="guardarConfigGeneral()">Guardar Ajustes</button>
@@ -585,7 +586,7 @@
         <div class="panel">
           <div style="font-weight:800; font-size:13.5px;" id="titulo-form-cond">Agregar Chofer</div>
           <label>Código</label>
-          <input type="text" id="adm-codigo" placeholder="MOTO01">
+          <input type="text" id="adm-codigo" placeholder="G-01">
           <label>Clave</label>
           <input type="text" id="adm-clave" placeholder="1234">
           <label>Nombre</label>
@@ -727,6 +728,32 @@
     return "58" + l;
   }
 
+  /* Detecta de forma exclusiva si el chofer pertenece a TUREN, PIRITU o OTRO */
+  function clasificarZonaChofer(c) {
+    const rawZona = String(c.zona || c.ruta || "").trim().toLowerCase();
+    const rawUbi = String(c.ubicacion || "").trim().toLowerCase();
+
+    if (rawZona === "turén" || rawZona === "turen") return "TUREN";
+    if (rawZona === "píritu" || rawZona === "piritu") return "PIRITU";
+    if (rawZona === "otro") return "OTRO";
+
+    // Compatibilidad con registros antiguos que guardaban "Turén -> Píritu" o "Píritu -> Turén"
+    if (rawZona.includes("turén") || rawZona.includes("turen")) return "TUREN";
+    if (rawZona.includes("píritu") || rawZona.includes("piritu")) return "PIRITU";
+    if (rawUbi.includes("turén") || rawUbi.includes("turen")) return "TUREN";
+    if (rawUbi.includes("píritu") || rawUbi.includes("piritu")) return "PIRITU";
+
+    return "OTRO";
+  }
+
+  function formatearDescripcionChofer(c) {
+    const zonaClasificada = clasificarZonaChofer(c);
+    const zonaEtiqueta = c.zona || (zonaClasificada === "TUREN" ? "Turén" : zonaClasificada === "PIRITU" ? "Píritu" : "Otro");
+    const ubi = String(c.ubicacion || "").trim();
+    if (ubi) return `${zonaEtiqueta} • ${ubi}`;
+    return zonaEtiqueta;
+  }
+
   function registrarUsoLocalChofer(codigo) {
     if (!codigo) return;
     let mapa = {};
@@ -786,7 +813,7 @@
     btnAdmin.href = telAdmin ? `tel:${telAdmin}` : "#";
 
     const titulos = {
-      TODOS: "Choferes en ruta",
+      TODOS: "Todos los choferes",
       TUREN: "Choferes en Turén",
       PIRITU: "Choferes en Píritu",
       RECURRENTE: "Chofer recurrente"
@@ -796,15 +823,9 @@
     let items = appData.conductores.map((c, idx) => ({ c, idx }));
 
     if (filtroActual === "TUREN") {
-      items = items.filter(({ c }) => {
-        const txt = `${c.ruta || ""} ${c.ubicacion || ""}`.toLowerCase();
-        return txt.includes("turén") || txt.includes("turen");
-      });
+      items = items.filter(({ c }) => clasificarZonaChofer(c) === "TUREN");
     } else if (filtroActual === "PIRITU") {
-      items = items.filter(({ c }) => {
-        const txt = `${c.ruta || ""} ${c.ubicacion || ""}`.toLowerCase();
-        return txt.includes("píritu") || txt.includes("piritu");
-      });
+      items = items.filter(({ c }) => clasificarZonaChofer(c) === "PIRITU");
     } else if (filtroActual === "RECURRENTE") {
       const fav = obtenerCodigoMasUsado();
       if (!fav) {
@@ -827,12 +848,13 @@
     document.getElementById("lista-choferes").innerHTML = items.map(({ c, idx }) => {
       const tagCls = c.estado === "Disponible" ? "tag-libre" : "tag-ocup";
       const foto = c.linkFoto || "icon.svg";
+      const detalle = formatearDescripcionChofer(c);
       return `
         <div class="chofer-card" onclick="abrirFichaChofer(${idx})">
           <img class="chofer-avatar" src="${foto}" alt="${c.nombre}" onerror="this.src='icon.svg'">
           <div class="chofer-info">
             <div class="chofer-nombre">${c.nombre}</div>
-            <div class="chofer-ruta">${c.ruta} • ${c.ubicacion || "En vía"}</div>
+            <div class="chofer-ruta">${detalle}</div>
           </div>
           <span class="estado-tag ${tagCls}">${c.estado}</span>
         </div>
@@ -846,6 +868,7 @@
     const foto = c.linkFoto || "icon.svg";
     const tel = limpiarTel(c.telefono);
     const precio = appData.config.precioCarrera || "Consultar tarifa";
+    const detalle = formatearDescripcionChofer(c);
 
     document.getElementById("modal-chofer-body").innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -854,7 +877,7 @@
       </div>
       <img class="modal-img" src="${foto}" alt="${c.nombre}" onerror="this.src='icon.svg'">
       <h2 style="margin:10px 0 2px 0; font-size:18px;">${c.nombre}</h2>
-      <div style="font-size:12px; color:var(--muted);">${c.ruta} • <strong>${c.ubicacion || "Sin ubicación"}</strong></div>
+      <div style="font-size:12px; color:var(--muted);"><strong>${detalle}</strong></div>
 
       <div class="grid-2">
         <div class="mini-box"><span class="mini-lbl">Teléfono</span><strong>${c.telefono || "-"}</strong></div>
@@ -877,7 +900,7 @@
         <div style="font-size:11px; font-weight:700; color:var(--cyan);">Pedir por WhatsApp (registra tu IP):</div>
         <input type="text" id="cli-nombre" placeholder="Tu nombre">
         <input type="tel" id="cli-telefono" placeholder="Tu teléfono">
-        <input type="text" id="cli-origen" placeholder="¿Dónde estás? (Ej: Mata de Palma)">
+        <input type="text" id="cli-origen" placeholder="¿Dónde estás? (Ej: El Jobal)">
       </div>
 
       <div class="btn-row">
@@ -931,7 +954,7 @@
           ip,
           nombreCliente: nombreCli,
           telefonoCliente: telCli,
-          origenCliente: origenCli || c.ruta,
+          origenCliente: origenCli || formatearDescripcionChofer(c),
           nombreConductor: c.nombre,
           codigoConductor: c.codigo,
           dispositivo: navigator.userAgent
@@ -941,7 +964,7 @@
 
     const wa = telVE(c.telefono);
     const precio = appData.config.precioCarrera || "Consultar tarifa";
-    const msg = `Hola ${c.nombre}, soy ${nombreCli} (Tel: ${telCli}). Pido moto taxi en RUTA AZUL (${c.ruta}). Ubicación: ${origenCli || "Por indicar"}. Tarifa: ${precio}.`;
+    const msg = `Hola ${c.nombre}, soy ${nombreCli} (Tel: ${telCli}). Pido moto taxi en RUTA AZUL (${formatearDescripcionChofer(c)}). Ubicación: ${origenCli || "Por indicar"}. Tarifa: ${precio}.`;
     window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
@@ -981,11 +1004,30 @@
     }
   }
 
+  function alCambiarZona() {
+    const zona = document.getElementById("cond-zona").value;
+    const lbl = document.getElementById("lbl-ubicacion");
+    const inp = document.getElementById("cond-ubicacion");
+    if (zona === "Otro") {
+      lbl.textContent = "Anota dónde estás ahora o tu dirección";
+      inp.placeholder = "Ej: El Jobal, Caserío Mata de Palma...";
+      inp.focus();
+    } else {
+      lbl.textContent = "Ubicación o punto de referencia (opcional, reemplaza la anterior)";
+      inp.placeholder = `Ej: Centro de ${zona}`;
+    }
+  }
+
   function pintarPanelConductor(c) {
     document.getElementById("conductor-login").classList.add("hidden");
     document.getElementById("conductor-panel").classList.remove("hidden");
     document.getElementById("cond-nombre-sesion").textContent = `${c.nombre} (${c.codigo})`;
-    document.getElementById("cond-ruta").value = c.ruta || "Píritu ➔ Turén";
+
+    const clasif = clasificarZonaChofer(c);
+    const zonaVal = c.zona || (clasif === "TUREN" ? "Turén" : clasif === "PIRITU" ? "Píritu" : "Otro");
+    document.getElementById("cond-zona").value = ["Píritu", "Turén", "Otro"].includes(zonaVal) ? zonaVal : "Otro";
+    alCambiarZona();
+
     document.getElementById("cond-ubicacion").value = c.ubicacion || "";
     seleccionarEstado(c.estado || "Disponible");
   }
@@ -1012,8 +1054,12 @@
 
   async function guardarEstadoConductor() {
     if (!conductorSesion) return;
-    const ruta = document.getElementById("cond-ruta").value;
+    const zona = document.getElementById("cond-zona").value;
     const ubicacion = document.getElementById("cond-ubicacion").value.trim();
+
+    if (zona === "Otro" && !ubicacion) {
+      return mostrarMsg("msg-cond", "Anota tu dirección o ubicación actual.", true);
+    }
 
     try {
       const r = await fetch(API_URL, {
@@ -1023,15 +1069,17 @@
           codigo: conductorSesion.codigo,
           clave: conductorSesion.clave,
           estado: estadoCondElegido,
-          ruta,
+          zona,
+          ruta: zona,
           ubicacion
         })
       });
       const d = await r.json();
       if (d.status === "ok") {
-        conductorSesion.estado = d.estado;
-        conductorSesion.ruta = d.ruta;
-        conductorSesion.ubicacion = d.ubicacion;
+        conductorSesion.estado = d.estado || estadoCondElegido;
+        conductorSesion.zona = d.zona || zona;
+        conductorSesion.ruta = d.ruta || zona;
+        conductorSesion.ubicacion = d.ubicacion !== undefined ? d.ubicacion : ubicacion;
         localStorage.setItem(STORAGE_COND, JSON.stringify(conductorSesion));
         mostrarMsg("msg-cond", "Guardado.");
       } else {
